@@ -1,0 +1,64 @@
+# Bytecode & cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Django migrations (keep init for app registration)
+**/migrations/
+!**/migrations/__init__.py
+
+# Environment & secrets
+.env
+*.env
+env/
+venv/
+.venv/
+ENV/
+
+# Local database & logs
+*.sqlite3
+*.db
+*.log
+
+# IDEs/editors
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Pytest, coverage, testing
+htmlcov/
+.coverage
+.coverage.*
+.cache
+*.cover
+*.py,cover
+nosetests.xml
+test_*.xml
+junit-*.xml
+coverage.xml
+
+# Type checking
+.mypy_cache/
+.dmypy.json
+.pytype/
+
+# PyInstaller
+*.manifest
+*.spec
+dist/
+build/
+
+# Docker, Celery
+*.pid
+celerybeat-schedule
+celerybeat.pid
+
+# VS Code specific (optional)
+.vscode/settings.json
+
+
