@@ -1,0 +1,151 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="{% static 'images/omegalogo.png' %}" sizes="64×64" />
+    <title>Omega</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body,
+      html {
+        height: 100%;
+        background-color: #fff;
+        font-family: sans-serif;
+      }
+
+      .intro-container {
+        height: 80vh;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+        z-index: 9999;
+      }
+
+      .image-wrapper {
+        width: 250px;
+        margin-top: 14rem;
+        position: relative;
+      }
+
+      .pit {
+        width: 100%;
+        height: auto;
+        object-fit: contain;
+        opacity: 1;
+        animation: pitMove 0.9s ease-in-out 3s forwards;
+      }
+
+      .logo {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 160px;
+        opacity: 0.8;
+        transform: translate(-50%, -50%);
+        animation: logoFloat 3s ease-in-out forwards;
+      }
+
+      .omega {
+        position: absolute;
+        top: 150px;
+        left: 0;
+        width: 0;
+        opacity: 0;
+        transform-origin: left;
+        animation: omegaExpand 1.3s ease-in-out 3.5s forwards;
+      }
+
+      @keyframes pitMove {
+        to {
+          transform: translateX(-150px);
+          opacity: 0;
+        }
+      }
+
+      @keyframes logoFloat {
+        0% {
+          transform: translate(-50%, 0);
+          opacity: 0.7;
+        }
+        30% {
+          transform: translate(-50%, -200%);
+          opacity: 0.8;
+        }
+        50% {
+          transform: translate(-50%, -100%);
+          opacity: 0.9;
+        }
+        100% {
+          transform: translate(-50%, -130%);
+          opacity: 1;
+        }
+      }
+
+      @keyframes omegaExpand {
+        to {
+          opacity: 1;
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="intro-container">
+      <div class="image-wrapper">
+        <img src="{% static 'images/pit.png' %}" alt="Pit" class="pit" />
+        <img
+          src="{% static 'images/omegalogo.png' %}"
+          alt="Logo"
+          class="logo"
+        />
+        <img
+          src="{% static 'images/omegatext.png' %}"
+          alt="Omega"
+          class="omega"
+        />
+      </div>
+    </div>
+
+    <script>
+      window.addEventListener("DOMContentLoaded", () => {
+        const token = localStorage.getItem("token");
+
+        if (!token) {
+          setTimeout(() => {
+            window.location.href = "{% url 'login' %}";
+          }, 6000);
+          return;
+        }
+
+        try {
+          const payload = JSON.parse(atob(token.split(".")[1]));
+          if (Date.now() > payload.exp * 1000) {
+            localStorage.removeItem("token");
+            setTimeout(() => {
+              window.location.href = "{% url 'login' %}";
+            }, 6000);
+          } else {
+            setTimeout(() => {
+              window.location.href = "{% url 'home' %}";
+            }, 6000);
+          }
+        } catch (e) {
+          localStorage.removeItem("token");
+          setTimeout(() => {
+            window.location.href = "{% url 'login' %}";
+          }, 6000);
+        }
+      });
+    </script>
+  </body>
+</html>

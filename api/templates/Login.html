@@ -1,0 +1,128 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Login</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body
+    class="bg-[#fffef5] relative min-h-screen flex flex-col items-center justify-center overflow-x-hidden"
+  >
+    <!-- Top Red Background -->
+    <div
+      class="absolute top-0 left-0 right-0 md:h-40 h-64 bg-[#e02627] md:rounded-b-full rounded-b-[100px] z-0 w-full max-w-[1400px] mx-auto"
+    ></div>
+
+    <!-- Login Card -->
+    <div class="relative z-10 w-full max-w-sm px-4">
+      <div
+        class="bg-white shadow-lg rounded-3xl p-6 sm:p-8 w-full max-w-[400px] mx-auto"
+      >
+        <!-- Logo -->
+        <div class="flex justify-center mb-2">
+          <img
+            src="{% static 'images/omega.png' %}"
+            alt="Omega Logo"
+            class="w-24 h-24 object-contain"
+          />
+        </div>
+
+        <!-- Brand Text -->
+        <!-- <div class="text-center text-[#e02627] font-medium italic text-sm mb-[-4px]">my Omega</div> -->
+
+        <!-- Login Title -->
+        <h2 class="text-2xl font-bold text-center mb-6">Login</h2>
+
+        <!-- Login Form -->
+        <form id="login-form" method="POST">
+          {% csrf_token %}
+
+          <div class="mb-4">
+            <label
+              for="username"
+              class="block text-sm font-medium text-black mb-1"
+              >User Id</label
+            >
+            <input
+              type="text"
+              name="username"
+              id="username"
+              class="w-full px-4 py-2 border border-red-300 rounded-full focus:outline-none focus:ring-2 focus:ring-red-500"
+              required
+            />
+          </div>
+
+          <div class="mb-4">
+            <label
+              for="password"
+              class="block text-sm font-medium text-black mb-1"
+              >Password</label
+            >
+            <input
+              type="password"
+              name="password"
+              id="password"
+              class="w-full px-4 py-2 border border-red-300 rounded-full focus:outline-none focus:ring-2 focus:ring-red-500"
+              required
+            />
+          </div>
+
+          <!-- Error Message Display -->
+          <p
+            id="error-msg"
+            class="text-sm text-red-600 font-medium text-center mb-4"
+          ></p>
+
+          <button
+            type="submit"
+            class="w-full bg-[#e02627] hover:bg-red-500 text-white font-semibold py-2 rounded-full transition duration-200"
+          >
+            Login
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <script>
+      const form = document.getElementById("login-form");
+      form.addEventListener("submit", async function (e) {
+        e.preventDefault();
+
+        const username = form.username.value;
+        const password = form.password.value;
+        const errorMsg = document.getElementById("error-msg");
+        errorMsg.textContent = "";
+
+        try {
+          const res = await fetch("{% url 'login' %}", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-CSRFToken": "{{ csrf_token }}",
+            },
+            body: JSON.stringify({ username, password }),
+          });
+
+          const result = await res.json();
+
+          if (res.ok) {
+            localStorage.setItem("token", result.token);
+            window.location.href = "/home/";
+          } else {
+            errorMsg.textContent = result.error || "Invalid credentials.";
+          }
+        } catch (error) {
+          errorMsg.textContent = "Something went wrong.";
+        }
+      });
+    </script>
+
+    <!-- Footer -->
+    <!-- <div class="absolute bottom-4 w-full flex flex-col items-center justify-center z-10">
+    <p class="text-sm font-semibold text-black mb-2">Powered by</p>
+    <img src="{% static 'images/IMC.png' %}" alt="IMC Logo" class="w-16 h-16 object-contain" />
+  </div> -->
+  </body>
+</html>
