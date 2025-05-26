@@ -59,6 +59,36 @@
         color: #ff3a3a;
         font-weight: 500;
       }
+      .dropdown-content {
+        max-height: 200px;
+        overflow-y: auto;
+      }
+      .loading {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid #ff6b6b;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+      .error-message {
+        background-color: #fee2e2;
+        border: 1px solid #fecaca;
+        color: #dc2626;
+        padding: 12px;
+        border-radius: 8px;
+        margin: 16px;
+        text-align: center;
+      }
     </style>
   </head>
   <body>
@@ -76,39 +106,96 @@
             class="hidden absolute -top-1 -right-1 w-2 h-2 bg-yellow-400 rounded-full"
           ></span>
         </a>
+        <button id="logout-btn" class="text-white hover:text-red-200">
+          <i class="fas fa-sign-out-alt text-xl"></i>
+        </button>
       </div>
     </header>
+
+    <!-- Authentication Error Message -->
+    <div id="auth-error" class="hidden error-message">
+      <i class="fas fa-exclamation-triangle mr-2"></i>
+      Your session has expired. Please
+      <a href="/login/" class="underline font-medium">login again</a>.
+    </div>
 
     <!-- Filter Panel -->
     <div
       id="filter-panel"
-      class="hidden fixed top-16 right-5 shadow-xl bg-white rounded-lg z-10 w-56 border border-gray-200"
+      class="hidden fixed top-16 right-5 shadow-xl bg-white rounded-lg z-10 w-64 border border-gray-200"
     >
       <div class="p-3 border-b border-gray-200 font-medium text-gray-700">
         Filter By
       </div>
       <ul>
         <li
-          class="px-4 py-3 flex items-center justify-between cursor-pointer hover:bg-gray-50"
+          class="px-4 py-3 cursor-pointer hover:bg-gray-50"
+          id="all-products-filter"
         >
-          <span>Stock Category</span>
-          <i class="fas fa-chevron-right text-xs text-gray-400"></i>
+          <span>All Products</span>
         </li>
         <li
-          class="px-4 py-3 flex items-center justify-between cursor-pointer hover:bg-gray-50"
+          class="px-4 py-3 cursor-pointer hover:bg-gray-50 relative"
+          id="stock-category-filter"
         >
-          <span>Product</span>
-          <i class="fas fa-chevron-right text-xs text-gray-400"></i>
+          <div class="flex items-center justify-between">
+            <span>Stock Category</span>
+            <i
+              class="fas fa-chevron-down text-xs text-gray-400"
+              id="category-arrow"
+            ></i>
+          </div>
+          <div class="hidden mt-2 dropdown-content" id="category-dropdown">
+            <div class="max-h-32 overflow-y-auto bg-gray-50 rounded">
+              <div class="p-2 text-center text-gray-500">
+                <div class="loading"></div>
+              </div>
+            </div>
+          </div>
         </li>
         <li
-          class="px-4 py-3 flex items-center justify-between cursor-pointer hover:bg-gray-50"
+          class="px-4 py-3 cursor-pointer hover:bg-gray-50 relative"
+          id="product-filter"
         >
-          <span>Brand</span>
-          <i class="fas fa-chevron-right text-xs text-gray-400"></i>
+          <div class="flex items-center justify-between">
+            <span>Product</span>
+            <i
+              class="fas fa-chevron-down text-xs text-gray-400"
+              id="product-arrow"
+            ></i>
+          </div>
+          <div class="hidden mt-2 dropdown-content" id="product-dropdown">
+            <div class="max-h-32 overflow-y-auto bg-gray-50 rounded">
+              <div class="p-2 text-center text-gray-500">
+                <div class="loading"></div>
+              </div>
+            </div>
+          </div>
+        </li>
+        <li
+          class="px-4 py-3 cursor-pointer hover:bg-gray-50 relative"
+          id="brand-filter"
+        >
+          <div class="flex items-center justify-between">
+            <span>Brand</span>
+            <i
+              class="fas fa-chevron-down text-xs text-gray-400"
+              id="brand-arrow"
+            ></i>
+          </div>
+          <div class="hidden mt-2 dropdown-content" id="brand-dropdown">
+            <div class="max-h-32 overflow-y-auto bg-gray-50 rounded">
+              <div class="p-2 text-center text-gray-500">
+                <div class="loading"></div>
+              </div>
+            </div>
+          </div>
         </li>
       </ul>
       <div class="p-3 border-t border-gray-200 flex justify-end">
-        <button class="text-red-500 font-medium text-sm">Apply Filters</button>
+        <button class="text-red-500 font-medium text-sm" id="apply-filters-btn">
+          Apply Filters
+        </button>
       </div>
     </div>
 
@@ -118,22 +205,29 @@
         <div class="relative">
           <input
             type="text"
-            placeholder="Search"
+            placeholder="Search products..."
             class="w-full py-2 px-4 border border-red-300 rounded-full focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+            id="search-input"
           />
-          <button class="absolute right-4 top-2 text-gray-400">
+          <button class="absolute right-4 top-2 text-gray-400" id="search-btn">
             <i class="fas fa-search"></i>
           </button>
         </div>
       </div>
 
-      <div class="search-button">
+      <div class="search-button" id="search-button">
         <i class="fas fa-search text-white text-lg"></i>
       </div>
     </div>
 
+    <!-- Loading Indicator -->
+    <div class="px-4 py-8 text-center hidden" id="loading-indicator">
+      <div class="loading mx-auto"></div>
+      <p class="mt-2 text-gray-500">Loading products...</p>
+    </div>
+
     <!-- Stock Table -->
-    <div class="px-3 pb-6">
+    <div class="px-3 pb-6" id="table-container">
       <div class="table-container">
         <div class="table-header grid grid-cols-3">
           <div class="table-cell text-sm">Product Name</div>
@@ -141,36 +235,16 @@
           <div class="table-cell text-sm">Cost</div>
         </div>
 
-        <div class="table-row grid grid-cols-3">
-          <div class="table-cell">Jeans</div>
-          <div class="table-cell">10</div>
-          <div class="table-cell">120</div>
-        </div>
-
-        <div class="table-row grid grid-cols-3">
-          <div class="table-cell">T-shirt</div>
-          <div class="table-cell">30</div>
-          <div class="table-cell">330</div>
-        </div>
-
-        <div class="table-row grid grid-cols-3">
-          <div class="table-cell">Shorts</div>
-          <div class="table-cell">80</div>
-          <div class="table-cell">150</div>
-        </div>
-
-        <div class="table-row grid grid-cols-3 highlight-row">
-          <div class="table-cell highlight-text">Jacket</div>
-          <div class="table-cell highlight-text">60</div>
-          <div class="table-cell highlight-text">600</div>
-        </div>
-
-        <div class="table-row grid grid-cols-3">
-          <div class="table-cell">Leggings</div>
-          <div class="table-cell">40</div>
-          <div class="table-cell">250</div>
+        <div id="products-table-body">
+          <!-- Products will be loaded here -->
         </div>
       </div>
+    </div>
+
+    <!-- No Results Message -->
+    <div class="px-4 py-8 text-center hidden" id="no-results">
+      <i class="fas fa-box-open text-4xl text-gray-300 mb-4"></i>
+      <p class="text-gray-500">No products found matching your criteria.</p>
     </div>
 
     <!-- Floating Action Button -->
@@ -183,21 +257,427 @@
     </div>
 
     <script>
-      // Simple toggle for filter panel
-      document
-        .getElementById("filter-button")
-        .addEventListener("click", function () {
-          let filterPanel = document.getElementById("filter-panel");
-          let filterDot = document.getElementById("filter-dot");
+      // Global variables to store filter data and current filters
+      let stockCategories = [];
+      let products = [];
+      let brands = [];
+      let currentFilters = {
+        stockCategory: null,
+        product: null,
+        brand: null,
+        search: "",
+      };
 
-          if (filterPanel.classList.contains("hidden")) {
-            filterPanel.classList.remove("hidden");
-            filterDot.classList.remove("hidden");
-          } else {
-            filterPanel.classList.add("hidden");
-            filterDot.classList.add("hidden");
-          }
+      // API Base URL - adjust this to your actual API endpoint
+      const API_BASE_URL = "http://127.0.0.1:8000/api";
+
+      // Authentication utilities
+      function getAuthToken() {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          showAuthError();
+          return null;
+        }
+        return token;
+      }
+
+      function getAuthHeaders() {
+        const token = getAuthToken();
+        if (!token) return null;
+
+        return {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        };
+      }
+
+      function showAuthError() {
+        document.getElementById("auth-error").classList.remove("hidden");
+        document.getElementById("table-container").classList.add("hidden");
+        document.getElementById("loading-indicator").classList.add("hidden");
+      }
+
+      function hideAuthError() {
+        document.getElementById("auth-error").classList.add("hidden");
+      }
+
+      function handleAuthError() {
+        localStorage.removeItem("token");
+        showAuthError();
+      }
+
+      function logout() {
+        localStorage.removeItem("token");
+        window.location.href = "/login/";
+      }
+
+      // Enhanced fetch function with authentication
+      async function authenticatedFetch(url, options = {}) {
+        const headers = getAuthHeaders();
+        if (!headers) {
+          throw new Error("No authentication token");
+        }
+
+        const response = await fetch(url, {
+          ...options,
+          headers: {
+            ...headers,
+            ...options.headers,
+          },
         });
+
+        if (response.status === 401 || response.status === 403) {
+          handleAuthError();
+          throw new Error("Authentication failed");
+        }
+
+        return response;
+      }
+
+      // Initialize the page
+      document.addEventListener("DOMContentLoaded", function () {
+        // Check if user is authenticated
+        if (!getAuthToken()) {
+          showAuthError();
+          return;
+        }
+
+        hideAuthError();
+        loadInitialData();
+        setupEventListeners();
+      });
+
+      function setupEventListeners() {
+        // Logout button
+        document.getElementById("logout-btn").addEventListener("click", logout);
+
+        // Filter panel toggle
+        document
+          .getElementById("filter-button")
+          .addEventListener("click", toggleFilterPanel);
+
+        // Filter dropdown toggles
+        document
+          .getElementById("stock-category-filter")
+          .addEventListener("click", (e) => {
+            if (e.target.closest(".dropdown-content")) return;
+            toggleDropdown("category");
+          });
+
+        document
+          .getElementById("product-filter")
+          .addEventListener("click", (e) => {
+            if (e.target.closest(".dropdown-content")) return;
+            toggleDropdown("product");
+          });
+
+        document
+          .getElementById("brand-filter")
+          .addEventListener("click", (e) => {
+            if (e.target.closest(".dropdown-content")) return;
+            toggleDropdown("brand");
+          });
+
+        // All products filter
+        document
+          .getElementById("all-products-filter")
+          .addEventListener("click", () => {
+            clearAllFilters();
+            loadProducts();
+            toggleFilterPanel();
+          });
+
+        // Apply filters button
+        document
+          .getElementById("apply-filters-btn")
+          .addEventListener("click", () => {
+            loadProducts();
+            toggleFilterPanel();
+          });
+
+        // Search functionality
+        document
+          .getElementById("search-btn")
+          .addEventListener("click", handleSearch);
+        document
+          .getElementById("search-button")
+          .addEventListener("click", handleSearch);
+        document
+          .getElementById("search-input")
+          .addEventListener("keypress", (e) => {
+            if (e.key === "Enter") handleSearch();
+          });
+      }
+
+      async function loadInitialData() {
+        try {
+          // Load initial products
+          await loadProducts();
+
+          // Load filter options
+          await Promise.all([
+            loadStockCategories(),
+            loadProductsList(),
+            loadBrands(),
+          ]);
+        } catch (error) {
+          console.error("Error loading initial data:", error);
+          if (
+            error.message === "Authentication failed" ||
+            error.message === "No authentication token"
+          ) {
+            // Auth error already handled
+            return;
+          }
+          showError("Failed to load initial data. Please try again.");
+        }
+      }
+
+      async function loadProducts() {
+        showLoading();
+        try {
+          let url = `${API_BASE_URL}/products/`;
+          const params = new URLSearchParams();
+
+          if (currentFilters.stockCategory) {
+            params.append("stockCategory", currentFilters.stockCategory);
+          }
+          if (currentFilters.brand) {
+            params.append("brand", currentFilters.brand);
+          }
+          if (currentFilters.search) {
+            params.append("search", currentFilters.search);
+          }
+
+          if (params.toString()) {
+            url += "?" + params.toString();
+          }
+
+          const response = await authenticatedFetch(url);
+          const data = await response.json();
+
+          if (data.success) {
+            displayProducts(data.data);
+          } else {
+            throw new Error(data.error || "Failed to load products");
+          }
+        } catch (error) {
+          console.error("Error loading products:", error);
+          if (
+            error.message === "Authentication failed" ||
+            error.message === "No authentication token"
+          ) {
+            return;
+          }
+          showError("Failed to load products. Please try again.");
+        } finally {
+          hideLoading();
+        }
+      }
+
+      async function loadStockCategories() {
+        try {
+          const response = await authenticatedFetch(
+            `${API_BASE_URL}/stock-categories/`
+          );
+          const data = await response.json();
+
+          if (data.success) {
+            stockCategories = data.data;
+            populateDropdown("category", stockCategories);
+          }
+        } catch (error) {
+          console.error("Error loading stock categories:", error);
+        }
+      }
+
+      async function loadProductsList() {
+        try {
+          const response = await authenticatedFetch(
+            `${API_BASE_URL}/products-list/`
+          );
+          const data = await response.json();
+
+          if (data.success) {
+            products = data.data;
+            populateDropdown("product", products);
+          }
+        } catch (error) {
+          console.error("Error loading products list:", error);
+        }
+      }
+
+      async function loadBrands() {
+        try {
+          const response = await authenticatedFetch(`${API_BASE_URL}/brands/`);
+          const data = await response.json();
+
+          if (data.success) {
+            brands = data.data;
+            populateDropdown("brand", brands);
+          }
+        } catch (error) {
+          console.error("Error loading brands:", error);
+        }
+      }
+
+      function populateDropdown(type, items) {
+        const dropdownId = `${type}-dropdown`;
+        const dropdown = document.getElementById(dropdownId);
+
+        if (!dropdown) return;
+
+        dropdown.innerHTML = "";
+
+        items.forEach((item) => {
+          const div = document.createElement("div");
+          div.className = "px-3 py-2 cursor-pointer hover:bg-gray-200 text-sm";
+          div.textContent = item;
+          div.addEventListener("click", () => selectFilter(type, item));
+          dropdown.appendChild(div);
+        });
+      }
+
+      function selectFilter(type, value) {
+        if (type === "category") {
+          currentFilters.stockCategory = value;
+          updateFilterIndicator();
+        } else if (type === "product") {
+          currentFilters.product = value;
+          updateFilterIndicator();
+        } else if (type === "brand") {
+          currentFilters.brand = value;
+          updateFilterIndicator();
+        }
+
+        // Close the dropdown
+        document.getElementById(`${type}-dropdown`).classList.add("hidden");
+        document
+          .getElementById(`${type}-arrow`)
+          .classList.remove("fa-chevron-up");
+        document
+          .getElementById(`${type}-arrow`)
+          .classList.add("fa-chevron-down");
+      }
+
+      function clearAllFilters() {
+        currentFilters = {
+          stockCategory: null,
+          product: null,
+          brand: null,
+          search: "",
+        };
+        document.getElementById("search-input").value = "";
+        updateFilterIndicator();
+      }
+
+      function updateFilterIndicator() {
+        const filterDot = document.getElementById("filter-dot");
+        const hasFilters =
+          currentFilters.stockCategory ||
+          currentFilters.product ||
+          currentFilters.brand ||
+          currentFilters.search;
+
+        if (hasFilters) {
+          filterDot.classList.remove("hidden");
+        } else {
+          filterDot.classList.add("hidden");
+        }
+      }
+
+      function toggleFilterPanel() {
+        const filterPanel = document.getElementById("filter-panel");
+        filterPanel.classList.toggle("hidden");
+      }
+
+      function toggleDropdown(type) {
+        const dropdown = document.getElementById(`${type}-dropdown`);
+        const arrow = document.getElementById(`${type}-arrow`);
+
+        dropdown.classList.toggle("hidden");
+
+        if (dropdown.classList.contains("hidden")) {
+          arrow.classList.remove("fa-chevron-up");
+          arrow.classList.add("fa-chevron-down");
+        } else {
+          arrow.classList.remove("fa-chevron-down");
+          arrow.classList.add("fa-chevron-up");
+        }
+      }
+
+      function handleSearch() {
+        const searchValue = document
+          .getElementById("search-input")
+          .value.trim();
+        currentFilters.search = searchValue;
+        updateFilterIndicator();
+        loadProducts();
+      }
+
+      function displayProducts(productsData) {
+        const tableBody = document.getElementById("products-table-body");
+        const noResults = document.getElementById("no-results");
+        const tableContainer = document.getElementById("table-container");
+
+        if (!productsData || productsData.length === 0) {
+          tableContainer.classList.add("hidden");
+          noResults.classList.remove("hidden");
+          return;
+        }
+
+        tableContainer.classList.remove("hidden");
+        noResults.classList.add("hidden");
+
+        tableBody.innerHTML = "";
+
+        productsData.forEach((product, index) => {
+          const row = document.createElement("div");
+          row.className = `table-row grid grid-cols-3 ${
+            index % 2 === 0 ? "" : "bg-gray-50"
+          }`;
+
+          // Format quantity with unit
+          const quantityDisplay = `${product.quantity || 0} ${
+            product.unit || ""
+          }`.trim();
+
+          row.innerHTML = `
+            <div class="table-cell">${product.name || "N/A"}</div>
+            <div class="table-cell">${quantityDisplay}</div>
+            <div class="table-cell">₹${product.billedcost || "0.00"}</div>
+          `;
+
+          tableBody.appendChild(row);
+        });
+      }
+
+      function showLoading() {
+        document.getElementById("loading-indicator").classList.remove("hidden");
+        document.getElementById("table-container").classList.add("hidden");
+        document.getElementById("no-results").classList.add("hidden");
+      }
+
+      function hideLoading() {
+        document.getElementById("loading-indicator").classList.add("hidden");
+      }
+
+      function showError(message) {
+        alert(message); // You can replace this with a more elegant error display
+      }
+
+      // Close filter panel when clicking outside
+      document.addEventListener("click", function (event) {
+        const filterPanel = document.getElementById("filter-panel");
+        const filterButton = document.getElementById("filter-button");
+
+        if (
+          !filterPanel.contains(event.target) &&
+          !filterButton.contains(event.target)
+        ) {
+          filterPanel.classList.add("hidden");
+        }
+      });
     </script>
   </body>
 </html>
