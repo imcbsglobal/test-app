@@ -20,18 +20,18 @@ logger = logging.getLogger(__name__)
 # INDEX VIEW
 class IndexView(View):
     def get(self, request):
-        return render(request, 'index.html')
+        return render(request, 'Index.html')
 
 # HOME VIEW
 class HomeView(APIView):
     def get(self, request):
         #return Response({"message": "Welcome to the Omega-Backend API"})
-        return render(request, 'home.html')
+        return render(request, 'Home.html')
 
 # LOGIN VIEW
 class LoginView(APIView):
     def get(self, request):
-        return render(request, 'login.html')
+        return render(request, 'Login.html')
 
     def post(self, request):
         username = request.data.get('username')
