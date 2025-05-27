@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import HomeView, LoginView, LogoutView, IndexView, TransactionDetailsView, StockReportView, ProductsAPIView, ProductListAPIView, ProductDetailAPIView, StockCategoriesAPIView, BrandsAPIView
+from .views import HomeView, LoginView, LogoutView, IndexView, TransactionDetailsView, StockReportView, ProductsAPIView, ProductListAPIView, ProductDetailAPIView, StockCategoriesAPIView, BrandsAPIView, ProductSummaryAPIView, ProductSummaryByDateAPIView
 
 urlpatterns = [
     path('', IndexView.as_view(), name='index'),        # Base URL → http://127.0.0.1:8000/
@@ -15,5 +15,9 @@ urlpatterns = [
     path('stock-categories/', StockCategoriesAPIView.as_view(), name='api_stock_categories'),
     path('brands/', BrandsAPIView.as_view(), name='api_brands'),
     path('products-list/', ProductsAPIView.as_view(), name='api_products_list'),
+
+    # Transaction Summary API endpoints
+    path('product-summary/', ProductSummaryAPIView.as_view(), name='product-summary'),
+    path('product-summary-by-date/', ProductSummaryByDateAPIView.as_view(), name='product-summary-by-date'),
     
 ]

@@ -11,7 +11,8 @@ from .models import AdminCredential, AccInvDetails, AccInvMast, AccProduct, AccP
 from .serializers import AdminCredentialSerializer, AccInvDetailsSerializer, AccInvMastSerializer, AccProductSerializer, AccProductionDetailsSerializer, AccPurchaseDetailsSerializer, AccPurchaseMasterSerializer
 from django.contrib.auth.hashers import check_password
 import jwt
-from django.db.models import Q
+from django.db.models import Q, Sum
+from django.utils.dateparse import parse_date
 from .permissions import IsAdminAuthenticated
 
 logger = logging.getLogger(__name__)
@@ -74,6 +75,8 @@ class TransactionDetailsView(View):
 
 
 # ===== API ENDPOINTS FOR PRODUCTS =====
+
+## StockReport.html page API views
 class ProductListAPIView(APIView):
     permission_classes = [IsAdminAuthenticated]
     """
@@ -131,7 +134,8 @@ class ProductListAPIView(APIView):
                     **item,
                     'unit': unit,
                     # Ensure billedcost is properly formatted
-                    'billedcost': float(item.get('billedcost', 0)) if item.get('billedcost') else 0.00
+                    'billedcost': float(item.get('billedcost', 0)) if item.get('billedcost') else 0.00,
+                    'quantity': int(float(item.get('quantity', 0))) if item.get('quantity') else 0
                 }
                 formatted_data.append(formatted_item)
             
@@ -270,6 +274,145 @@ class ProductDetailAPIView(APIView):
             
         except Exception as e:
             logger.error(f"Error in ProductDetailAPIView: {str(e)}", exc_info=True)
+            return Response({
+                'success': False,
+                'error': str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+
+## TransactionDetails.html page API views
+class ProductSummaryAPIView(APIView):
+    permission_classes = [IsAdminAuthenticated]
+
+    def get(self, request):
+        try:
+            # Get filters
+            stock_category = request.GET.get('stockCategory')
+            brand = request.GET.get('brand')
+            product = request.GET.get('product')
+            search = request.GET.get('search')
+
+            queryset = AccProduct.objects.all()
+
+            if stock_category and stock_category != 'all':
+                queryset = queryset.filter(stockcatagory=stock_category)
+
+            if brand and brand != 'all':
+                queryset = queryset.filter(brand=brand)
+
+            if product and product != 'all':
+                queryset = queryset.filter(product=product)
+
+            if search:
+                queryset = queryset.filter(
+                    Q(name__icontains=search) |
+                    Q(code__icontains=search) |
+                    Q(product__icontains=search) |
+                    Q(brand__icontains=search) |
+                    Q(stockcatagory__icontains=search)
+                )
+
+            queryset = queryset.order_by('name')
+
+            # Get list of codes from filtered products
+            product_codes = list(queryset.values_list('code', flat=True))
+
+            # Bulk pre-fetch and sum quantities by code
+            inv_qs = AccInvDetails.objects.filter(code__in=product_codes).values('code').annotate(total=Sum('quantity'))
+            purchase_qs = AccPurchaseDetails.objects.filter(code__in=product_codes).values('code').annotate(total=Sum('quantity'))
+            production_qs = AccProductionDetails.objects.filter(code__in=product_codes).values('code').annotate(total=Sum('qty'))
+
+            # Build fast lookup dicts
+            inv_map = {item['code']: item['total'] or 0 for item in inv_qs}
+            purchase_map = {item['code']: item['total'] or 0 for item in purchase_qs}
+            production_map = {item['code']: item['total'] or 0 for item in production_qs}
+
+            summary_data = []
+
+            for product in queryset:
+                code = product.code
+                summary_data.append({
+                    'code': code,
+                    'name': product.name,
+                    'inv_quantity': int(inv_map.get(code, 0)),
+                    'purchase_quantity': int(purchase_map.get(code, 0)),
+                    'production_quantity': int(production_map.get(code, 0)),
+                })
+
+            return Response({
+                'success': True,
+                'data': summary_data,
+                'count': len(summary_data)
+            })
+
+        except Exception as e:
+            logger.error(f"Error in ProductSummaryAPIView: {str(e)}", exc_info=True)
+            return Response({
+                'success': False,
+                'error': str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+
+# Product summary by date API View
+class ProductSummaryByDateAPIView(APIView):
+    permission_classes = [IsAdminAuthenticated]
+
+    def get(self, request):
+        try:
+            from_date = request.GET.get('fromDate')
+            to_date = request.GET.get('toDate')
+
+            if not from_date or not to_date:
+                return Response({
+                    'success': False,
+                    'error': 'fromDate and toDate are required.'
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            from_date = parse_date(from_date)
+            to_date = parse_date(to_date)
+
+            # --- SALES (INVENTORY) ---
+            inv_slnos = AccInvMast.objects.filter(invdate__range=(from_date, to_date)).values_list('slno', flat=True)
+            inv_qs = AccInvDetails.objects.filter(invno__in=inv_slnos)
+            inv_data = inv_qs.values('code').annotate(total=Sum('quantity'))
+            sales_map = {item['code']: item['total'] or 0 for item in inv_data}
+
+            # --- PURCHASE ---
+            purchase_slnos = AccPurchaseMaster.objects.filter(date__range=(from_date, to_date)).values_list('slno', flat=True)
+            purchase_qs = AccPurchaseDetails.objects.filter(billno__in=purchase_slnos)
+            purchase_data = purchase_qs.values('code').annotate(total=Sum('quantity'))
+            purchase_map = {item['code']: item['total'] or 0 for item in purchase_data}
+
+            # --- PRODUCTION ---
+            production_nos = AccProduction.objects.filter(date__range=(from_date, to_date)).values_list('productionno', flat=True)
+            production_qs = AccProductionDetails.objects.filter(masterno__in=production_nos)
+            production_data = production_qs.values('code').annotate(total=Sum('qty'))
+            production_map = {item['code']: item['total'] or 0 for item in production_data}
+
+            # --- ALL PRODUCTS ---
+            product_qs = AccProduct.objects.values('code', 'name')
+            code_name_map = {item['code']: item['name'] for item in product_qs}
+            all_codes = set(code_name_map.keys())  # show all products, not just involved ones
+
+            # --- FINAL RESULT ---
+            summary_data = []
+            for code in all_codes:
+                summary_data.append({
+                    'code': code,
+                    'name': code_name_map.get(code, 'Unknown Product'),
+                    'sales_quantity': float(sales_map.get(code, 0)),
+                    'purchase_quantity': float(purchase_map.get(code, 0)),
+                    'production_quantity': float(production_map.get(code, 0)),
+                })
+
+            return Response({
+                'success': True,
+                'data': summary_data,
+                'count': len(summary_data)
+            })
+
+        except Exception as e:
+            logger.error(f"Error in ProductSummaryByDateAPIView: {str(e)}", exc_info=True)
             return Response({
                 'success': False,
                 'error': str(e)
