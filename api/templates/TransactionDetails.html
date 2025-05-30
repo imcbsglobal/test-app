@@ -685,8 +685,6 @@
         showError("Failed to load initial data. Please try again.");
       }
     }
-
-
     async function loadTransactionSummary() {
       showLoading();
       isDateFiltered = false;
@@ -775,10 +773,8 @@
         const data = await response.json();
 
         if (data.success) {
-          // FIXED: Properly set both original and working data
-          originalTransactionData = [...data.data]; // Store original data
-          allTransactionData = [...data.data]; // Set working data
-          currentPage = 1; // Reset pagination
+          originalTransactionData = data.data; // Store original data
+          allTransactionData = [...originalTransactionData]; // Set working data
           updatePaginatedTransactions();
           updatePaginationControls();
         } else {
@@ -800,16 +796,9 @@
       }
     }
 
-
     function handleSearch() {
       const searchTerm = document.getElementById("search-input").value.toLowerCase().trim();
-
-      // Ensure we have original data to search from
-      if (!originalTransactionData || originalTransactionData.length === 0) {
-        console.warn("No original data available for search");
-        return;
-      }
-
+      
       if (searchTerm === '') {
         // If search is empty, restore original data
         allTransactionData = [...originalTransactionData];
@@ -817,16 +806,10 @@
         // Filter the original data
         allTransactionData = originalTransactionData.filter(transaction => {
           const productName = transaction.name ? transaction.name.toLowerCase() : '';
-          const stockCategory = transaction.stock_category ? transaction.stock_category.toLowerCase() : '';
-          const brand = transaction.brand ? transaction.brand.toLowerCase() : '';
-
-          // Search in multiple fields for better results
-          return productName.includes(searchTerm) ||
-            stockCategory.includes(searchTerm) ||
-            brand.includes(searchTerm);
+          return productName.includes(searchTerm);
         });
       }
-
+      
       currentPage = 1; // Reset to first page
       updatePaginatedTransactions();
       updatePaginationControls();
@@ -843,16 +826,6 @@
       // Display only paginated data in table
       displayPaginatedTable(paginated, isDateFiltered);
     }
-
-    // function to clear search and reset data
-    function clearSearch() {
-      document.getElementById("search-input").value = '';
-      allTransactionData = [...originalTransactionData];
-      currentPage = 1;
-      updatePaginatedTransactions();
-      updatePaginationControls();
-    }
-
 
     function updatePaginationControls() {
       const container = document.getElementById("pagination-container");
@@ -1154,60 +1127,6 @@
       }
     }
 
-    function displayTransactions(transactionsData, isDateFiltered) {
-      const tableBody = document.getElementById("transactions-table-body");
-      const noResults = document.getElementById("no-results");
-      const tableContainer = document.getElementById("table-container");
-
-      if (!transactionsData || transactionsData.length === 0) {
-        tableContainer.classList.add("hidden");
-        noResults.classList.remove("hidden");
-        return;
-      }
-
-      tableContainer.classList.remove("hidden");
-      noResults.classList.add("hidden");
-
-      tableBody.innerHTML = "";
-
-      transactionsData.forEach((transaction, index) => {
-        const row = document.createElement("div");
-        row.className = `table-row grid grid-cols-4 ${index % 2 === 0 ? "" : "bg-gray-50"
-          }`;
-
-        // For date-filtered data, use different field names
-        const salesQty = isDateFiltered
-          ? transaction.sales_quantity || 0
-          : transaction.inv_quantity || 0;
-        const purchaseQty = isDateFiltered
-          ? transaction.purchase_quantity || 0
-          : transaction.purchase_quantity || 0;
-        const productionQty = isDateFiltered
-          ? transaction.production_quantity || 0
-          : transaction.production_quantity || 0;
-
-        // Highlight rows with high activity (you can adjust the criteria)
-        const isHighActivity =
-          salesQty > 50 || purchaseQty > 50 || productionQty > 1000;
-        if (isHighActivity) {
-          row.className += " highlight-row";
-        }
-
-        row.innerHTML = `
-            <div class="table-cell ${isHighActivity ? "highlight-text" : ""}">${transaction.name || "N/A"
-          }</div>
-            <div class="table-cell ${isHighActivity ? "highlight-text" : ""
-          }">${Math.round(salesQty)}</div>
-            <div class="table-cell ${isHighActivity ? "highlight-text" : ""
-          }">${Math.round(purchaseQty)}</div>
-            <div class="table-cell ${isHighActivity ? "highlight-text" : ""
-          }">${Math.round(productionQty)}</div>
-          `;
-
-        tableBody.appendChild(row);
-      });
-    }
-
     function showLoading() {
       document.getElementById("loading-indicator").classList.remove("hidden");
       document.getElementById("table-container").classList.add("hidden");
@@ -1235,441 +1154,6 @@
       }
     });
   </script>
-
-  <script>
-    // let allTransactionData = [];
-    // let currentPage = 1;
-    // let pageSize = 10;
-
-    function paginateData(data) {
-      allTransactionData = data;
-      updatePaginatedTransactions();
-      updatePaginationControls();
-    }
-
-    function updatePaginatedTransactions() {
-      const start = (currentPage - 1) * pageSize;
-      const end = start + pageSize;
-      const paginated = allTransactionData.slice(start, end);
-      displayTransactions(paginated, false);
-    }
-
-    function updatePaginationControls() {
-      const container = document.getElementById("pagination-container");
-      const info = document.getElementById("pagination-info");
-
-      const total = allTransactionData.length;
-      const totalPages = Math.ceil(total / pageSize);
-
-      const start = total === 0 ? 0 : (currentPage - 1) * pageSize + 1;
-      const end = Math.min(currentPage * pageSize, total);
-      info.textContent = `Showing ${start}-${end} of ${total} results`;
-
-      container.innerHTML = "";
-
-      if (totalPages <= 1) return;
-
-      const createBtn = (text, page, active = false, disabled = false) => {
-        const btn = document.createElement("button");
-        btn.className = `pagination-btn ${active ? "active" : ""}`;
-        btn.textContent = text;
-        btn.disabled = disabled;
-        if (!disabled) {
-          btn.addEventListener("click", () => {
-            currentPage = page;
-            updatePaginatedTransactions();
-            updatePaginationControls();
-          });
-        }
-        return btn;
-      };
-
-      // Previous
-      container.appendChild(createBtn("←", currentPage - 1, false, currentPage === 1));
-
-      // Pages
-      const maxPages = 3;
-      let startPage = Math.max(1, currentPage - 1);
-      let endPage = Math.min(startPage + maxPages - 1, totalPages);
-      for (let i = startPage; i <= endPage; i++) {
-        container.appendChild(createBtn(i, i, i === currentPage));
-      }
-
-      // Next
-      container.appendChild(createBtn("→", currentPage + 1, false, currentPage === totalPages));
-    }
-
-    // Hook into your existing transaction loading
-    async function loadTransactionSummary() {
-      showLoading();
-      isDateFiltered = false;
-
-      // Clear search input when loading new data
-      document.getElementById("search-input").value = '';
-
-      try {
-        let url = `${API_BASE_URL}/product-summary/`;
-        const params = new URLSearchParams();
-
-        if (currentFilters.stockCategory) {
-          params.append("stockCategory", currentFilters.stockCategory);
-        }
-        if (currentFilters.product) {
-          params.append("product", currentFilters.product);
-        }
-        if (currentFilters.brand) {
-          params.append("brand", currentFilters.brand);
-        }
-
-        if (params.toString()) {
-          url += "?" + params.toString();
-        }
-
-        const response = await authenticatedFetch(url);
-        const data = await response.json();
-
-        if (data.success) {
-          // FIXED: Properly set both original and working data
-          originalTransactionData = [...data.data]; // Store original data
-          allTransactionData = [...data.data]; // Set working data
-          currentPage = 1; // Reset pagination
-          updatePaginatedTransactions();
-          updatePaginationControls();
-        } else {
-          throw new Error(data.error || "Failed to load transaction summary");
-        }
-      } catch (error) {
-        console.error("Error loading transaction summary:", error);
-        if (
-          error.message === "Authentication failed" ||
-          error.message === "No authentication token"
-        ) {
-          return;
-        }
-        showError("Failed to load transaction data. Please try again.");
-      } finally {
-        hideLoading();
-      }
-    }
-
-
-    // Page size selector
-    document.addEventListener("DOMContentLoaded", function () {
-      document.getElementById("page-size-select").addEventListener("change", function (e) {
-        pageSize = parseInt(e.target.value);
-        currentPage = 1;
-        updatePaginatedTransactions();
-        updatePaginationControls();
-      });
-    });
-  </script>
-
-
-  <!-- dashboard quantity -->
-  <script>
-    // Add this function to calculate and update dashboard statistics
-    function updateDashboardStats(transactionsData, isDateFiltered) {
-      if (!transactionsData || transactionsData.length === 0) {
-        // Reset to zero if no data
-        document.getElementById("total-transactions").textContent = "0";
-        document.getElementById("total-sales").textContent = "0";
-        document.getElementById("total-production").textContent = "0";
-        document.getElementById("total-product-qty").textContent = "0";
-        return;
-      }
-
-      // Calculate totals
-      let totalProducts = transactionsData.length;
-      let totalSales = 0;
-      let totalPurchase = 0;
-      let totalProductQty = 0;
-
-      transactionsData.forEach(transaction => {
-        // Handle different field names based on data source
-        const salesQty = isDateFiltered
-          ? (transaction.sales_quantity || 0)
-          : (transaction.inv_quantity || 0);
-
-        const purchaseQty = isDateFiltered
-          ? (transaction.purchase_quantity || 0)
-          : (transaction.purchase_quantity || 0);
-
-        const productionQty = isDateFiltered
-          ? (transaction.production_quantity || 0)
-          : (transaction.production_quantity || 0);
-
-        totalSales += Number(salesQty);
-        totalPurchase += Number(purchaseQty);
-        totalProductQty += Number(productionQty);
-      });
-
-      // Update dashboard elements with animated counting effect
-      animateNumber("total-transactions", totalProducts);
-      animateNumber("total-sales", Math.round(totalSales));
-      animateNumber("total-production", Math.round(totalPurchase));
-      animateNumber("total-product-qty", Math.round(totalProductQty));
-    }
-
-    // Animated number counting function
-    function animateNumber(elementId, targetValue) {
-      const element = document.getElementById(elementId);
-      const startValue = parseInt(element.textContent) || 0;
-      const duration = 1000; // 1 second
-      const startTime = Date.now();
-
-      function updateNumber() {
-        const elapsed = Date.now() - startTime;
-        const progress = Math.min(elapsed / duration, 1);
-
-        // Easing function for smooth animation
-        const easeOut = 1 - Math.pow(1 - progress, 3);
-        const currentValue = Math.round(startValue + (targetValue - startValue) * easeOut);
-
-        element.textContent = currentValue.toLocaleString();
-
-        if (progress < 1) {
-          requestAnimationFrame(updateNumber);
-        }
-      }
-
-      requestAnimationFrame(updateNumber);
-    }
-
-    // Update your existing displayTransactions function
-    function displayTransactions(transactionsData, isDateFiltered) {
-      const tableBody = document.getElementById("transactions-table-body");
-      const noResults = document.getElementById("no-results");
-      const tableContainer = document.getElementById("table-container");
-
-      // Update dashboard stats first
-      updateDashboardStats(transactionsData, isDateFiltered);
-
-      if (!transactionsData || transactionsData.length === 0) {
-        tableContainer.classList.add("hidden");
-        noResults.classList.remove("hidden");
-        return;
-      }
-
-      tableContainer.classList.remove("hidden");
-      noResults.classList.add("hidden");
-
-      tableBody.innerHTML = "";
-
-      transactionsData.forEach((transaction, index) => {
-        const row = document.createElement("div");
-        row.className = `table-row grid grid-cols-4 ${index % 2 === 0 ? "" : "bg-gray-50"
-          }`;
-
-        // For date-filtered data, use different field names
-        const salesQty = isDateFiltered
-          ? transaction.sales_quantity || 0
-          : transaction.inv_quantity || 0;
-        const purchaseQty = isDateFiltered
-          ? transaction.purchase_quantity || 0
-          : transaction.purchase_quantity || 0;
-        const productionQty = isDateFiltered
-          ? transaction.production_quantity || 0
-          : transaction.production_quantity || 0;
-
-        // Highlight rows with high activity
-        const isHighActivity =
-          salesQty > 50 || purchaseQty > 50 || productionQty > 1000;
-        if (isHighActivity) {
-          row.className += " highlight-row";
-        }
-
-        row.innerHTML = `
-      <div class="table-cell ${isHighActivity ? "highlight-text" : ""}">${transaction.name || "N/A"
-          }</div>
-      <div class="table-cell ${isHighActivity ? "highlight-text" : ""
-          }">${Math.round(salesQty).toLocaleString()}</div>
-      <div class="table-cell ${isHighActivity ? "highlight-text" : ""
-          }">${Math.round(purchaseQty).toLocaleString()}</div>
-      <div class="table-cell ${isHighActivity ? "highlight-text" : ""
-          }">${Math.round(productionQty).toLocaleString()}</div>
-    `;
-
-        tableBody.appendChild(row);
-      });
-    }
-
-    // Update your paginated display function as well
-    function updatePaginatedTransactions() {
-      const start = (currentPage - 1) * pageSize;
-      const end = start + pageSize;
-      const paginated = allTransactionData.slice(start, end);
-
-      // Update dashboard with ALL data, not just paginated
-      updateDashboardStats(allTransactionData, false);
-
-      // Display only paginated data in table
-      displayPaginatedTable(paginated, false);
-    }
-
-    // Separate function for displaying only the table without updating dashboard
-    function displayPaginatedTable(transactionsData, isDateFiltered) {
-      const tableBody = document.getElementById("transactions-table-body");
-      const noResults = document.getElementById("no-results");
-      const tableContainer = document.getElementById("table-container");
-
-      if (!transactionsData || transactionsData.length === 0) {
-        tableContainer.classList.add("hidden");
-        noResults.classList.remove("hidden");
-        return;
-      }
-
-      tableContainer.classList.remove("hidden");
-      noResults.classList.add("hidden");
-
-      tableBody.innerHTML = "";
-
-      transactionsData.forEach((transaction, index) => {
-        const row = document.createElement("div");
-        row.className = `table-row grid grid-cols-4 ${index % 2 === 0 ? "" : "bg-gray-50"
-          }`;
-
-        const salesQty = isDateFiltered
-          ? transaction.sales_quantity || 0
-          : transaction.inv_quantity || 0;
-        const purchaseQty = isDateFiltered
-          ? transaction.purchase_quantity || 0
-          : transaction.purchase_quantity || 0;
-        const productionQty = isDateFiltered
-          ? transaction.production_quantity || 0
-          : transaction.production_quantity || 0;
-
-        const isHighActivity =
-          salesQty > 50 || purchaseQty > 50 || productionQty > 1000;
-        if (isHighActivity) {
-          row.className += " highlight-row";
-        }
-
-        row.innerHTML = `
-      <div class="table-cell ${isHighActivity ? "highlight-text" : ""}">${transaction.name || "N/A"
-          }</div>
-      <div class="table-cell ${isHighActivity ? "highlight-text" : ""
-          }">${Math.round(salesQty).toLocaleString()}</div>
-      <div class="table-cell ${isHighActivity ? "highlight-text" : ""
-          }">${Math.round(purchaseQty).toLocaleString()}</div>
-      <div class="table-cell ${isHighActivity ? "highlight-text" : ""
-          }">${Math.round(productionQty).toLocaleString()}</div>
-    `;
-
-        tableBody.appendChild(row);
-      });
-    }
-
-    // Initialize dashboard with loading state
-    function initializeDashboard() {
-      document.getElementById("total-transactions").textContent = "...";
-      document.getElementById("total-sales").textContent = "...";
-      document.getElementById("total-production").textContent = "...";
-      document.getElementById("total-product-qty").textContent = "...";
-    }
-
-
-
-    //################################//
-    document.addEventListener("DOMContentLoaded", function () {
-      // Check if user is authenticated
-      if (!getAuthToken()) {
-        showAuthError();
-        return;
-      }
-
-      hideAuthError();
-      initializeDashboard(); // Add this line
-      initializeDatePickers();
-      loadInitialData();
-      setupEventListeners();
-      showInitialMessage();
-    });
-
-
-
-    // ////////////////
-    // Add this to your setupEventListeners() function
-    function setupEventListeners() {
-      // Logout button
-      document.getElementById("logout-btn").addEventListener("click", logout);
-
-      // Filter panel toggle
-      document
-        .getElementById("filter-button")
-        .addEventListener("click", toggleFilterPanel);
-
-      // DATE SEARCH BUTTON - ADD THIS LINE
-      document
-        .getElementById("search-button")
-        .addEventListener("click", () => {
-          if (hasValidDateRange()) {
-            loadTransactionsByDate();
-          } else {
-            showError("Please select both from and to dates.");
-          }
-        });
-
-      // Filter dropdown toggles
-      document
-        .getElementById("stock-category-filter")
-        .addEventListener("click", (e) => {
-          if (e.target.closest(".dropdown-content")) return;
-          toggleDropdown("category");
-        });
-
-      document
-        .getElementById("product-filter")
-        .addEventListener("click", (e) => {
-          if (e.target.closest(".dropdown-content")) return;
-          toggleDropdown("product");
-        });
-
-      document
-        .getElementById("brand-filter")
-        .addEventListener("click", (e) => {
-          if (e.target.closest(".dropdown-content")) return;
-          toggleDropdown("brand");
-        });
-
-      // All products filter
-      document
-        .getElementById("all-products-filter")
-        .addEventListener("click", () => {
-          clearAllFilters();
-          if (hasValidDateRange()) {
-            loadTransactionsByDate();
-          } else {
-            loadTransactionSummary();
-          }
-          toggleFilterPanel();
-        });
-
-      // Apply filters button
-      document
-        .getElementById("apply-filters-btn")
-        .addEventListener("click", () => {
-          if (hasValidDateRange()) {
-            loadTransactionsByDate();
-          } else {
-            loadTransactionSummary();
-          }
-          toggleFilterPanel();
-        });
-
-      // Search functionality
-      // Text search input
-      document.getElementById("search-input").addEventListener("input", handleSearch);
-      document.getElementById("text-search-button").addEventListener("click", handleSearch);
-
-      // Page size selector
-      document.getElementById("page-size-select").addEventListener("change", function (e) {
-        pageSize = parseInt(e.target.value);
-        currentPage = 1;
-        updatePaginatedTransactions();
-      });
-    }
-  </script>
-
 </body>
 
 </html>
