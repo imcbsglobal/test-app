@@ -354,11 +354,13 @@ class ProductSummaryAPIView(APIView):
         
 
 # Product summary by date API View
+# Enhanced Product summary by date API View with filtering
 class ProductSummaryByDateAPIView(APIView):
     permission_classes = [IsAdminAuthenticated]
 
     def get(self, request):
         try:
+            # Get date range parameters
             from_date = request.GET.get('fromDate')
             to_date = request.GET.get('toDate')
 
@@ -371,44 +373,117 @@ class ProductSummaryByDateAPIView(APIView):
             from_date = parse_date(from_date)
             to_date = parse_date(to_date)
 
+            # Get filter parameters
+            stock_category = request.GET.get('stockCategory')
+            brand = request.GET.get('brand')
+            product = request.GET.get('product')
+            search = request.GET.get('search')
+
+            logger.debug(f"Filtering with dateRange=({from_date} to {to_date}), stockCategory={stock_category}, brand={brand}, product={product}, search={search}")
+
+            # --- FILTER PRODUCTS BASED ON CRITERIA ---
+            product_queryset = AccProduct.objects.all()
+
+            # Apply filters to product queryset
+            if stock_category and stock_category != 'all':
+                product_queryset = product_queryset.filter(stockcatagory=stock_category)
+            
+            if brand and brand != 'all':
+                product_queryset = product_queryset.filter(brand=brand)
+            
+            if product and product != 'all':
+                product_queryset = product_queryset.filter(product=product)
+            
+            # Apply search filter
+            if search:
+                product_queryset = product_queryset.filter(
+                    Q(name__icontains=search) | 
+                    Q(code__icontains=search) |
+                    Q(product__icontains=search) |
+                    Q(brand__icontains=search) |
+                    Q(stockcatagory__icontains=search)
+                )
+
+            # Get filtered product codes and names
+            filtered_products = product_queryset.values('code', 'name', 'stockcatagory', 'brand', 'product')
+            code_info_map = {item['code']: {
+                'name': item['name'],
+                'stockcatagory': item['stockcatagory'],
+                'brand': item['brand'],
+                'product': item['product']
+            } for item in filtered_products}
+            filtered_codes = set(code_info_map.keys())
+
+            if not filtered_codes:
+                return Response({
+                    'success': True,
+                    'data': [],
+                    'count': 0,
+                    'message': 'No products found matching the filter criteria.'
+                })
+
             # --- SALES (INVENTORY) ---
             inv_slnos = AccInvMast.objects.filter(invdate__range=(from_date, to_date)).values_list('slno', flat=True)
-            inv_qs = AccInvDetails.objects.filter(invno__in=inv_slnos)
+            inv_qs = AccInvDetails.objects.filter(invno__in=inv_slnos, code__in=filtered_codes)
             inv_data = inv_qs.values('code').annotate(total=Sum('quantity'))
             sales_map = {item['code']: item['total'] or 0 for item in inv_data}
 
             # --- PURCHASE ---
             purchase_slnos = AccPurchaseMaster.objects.filter(date__range=(from_date, to_date)).values_list('slno', flat=True)
-            purchase_qs = AccPurchaseDetails.objects.filter(billno__in=purchase_slnos)
+            purchase_qs = AccPurchaseDetails.objects.filter(billno__in=purchase_slnos, code__in=filtered_codes)
             purchase_data = purchase_qs.values('code').annotate(total=Sum('quantity'))
             purchase_map = {item['code']: item['total'] or 0 for item in purchase_data}
 
             # --- PRODUCTION ---
             production_nos = AccProduction.objects.filter(date__range=(from_date, to_date)).values_list('productionno', flat=True)
-            production_qs = AccProductionDetails.objects.filter(masterno__in=production_nos)
+            production_qs = AccProductionDetails.objects.filter(masterno__in=production_nos, code__in=filtered_codes)
             production_data = production_qs.values('code').annotate(total=Sum('qty'))
             production_map = {item['code']: item['total'] or 0 for item in production_data}
 
-            # --- ALL PRODUCTS ---
-            product_qs = AccProduct.objects.values('code', 'name')
-            code_name_map = {item['code']: item['name'] for item in product_qs}
-            all_codes = set(code_name_map.keys())  # show all products, not just involved ones
-
             # --- FINAL RESULT ---
             summary_data = []
-            for code in all_codes:
-                summary_data.append({
-                    'code': code,
-                    'name': code_name_map.get(code, 'Unknown Product'),
-                    'sales_quantity': float(sales_map.get(code, 0)),
-                    'purchase_quantity': float(purchase_map.get(code, 0)),
-                    'production_quantity': float(production_map.get(code, 0)),
-                })
+            for code in filtered_codes:
+                product_info = code_info_map.get(code, {})
+                
+                # Calculate totals
+                sales_qty = float(sales_map.get(code, 0))
+                purchase_qty = float(purchase_map.get(code, 0))
+                production_qty = float(production_map.get(code, 0))
+                
+                # Only include products that have some activity in the date range
+                # or remove this condition if you want to show all filtered products
+                if sales_qty > 0 or purchase_qty > 0 or production_qty > 0:
+                    summary_data.append({
+                        'code': code,
+                        'name': product_info.get('name', 'Unknown Product'),
+                        'stockcatagory': product_info.get('stockcatagory', ''),
+                        'brand': product_info.get('brand', ''),
+                        'product': product_info.get('product', ''),
+                        'sales_quantity': sales_qty,
+                        'purchase_quantity': purchase_qty,
+                        'production_quantity': production_qty,
+                        'net_change': purchase_qty + production_qty - sales_qty,  # Added net change calculation
+                    })
+
+            # Sort by product name for consistent display
+            summary_data.sort(key=lambda x: x['name'])
+
+            logger.info(f"Returned {len(summary_data)} products for date range {from_date} to {to_date}")
 
             return Response({
                 'success': True,
                 'data': summary_data,
-                'count': len(summary_data)
+                'count': len(summary_data),
+                'date_range': {
+                    'from_date': from_date.strftime('%Y-%m-%d'),
+                    'to_date': to_date.strftime('%Y-%m-%d')
+                },
+                'filters_applied': {
+                    'stock_category': stock_category,
+                    'brand': brand,
+                    'product': product,
+                    'search': search
+                }
             })
 
         except Exception as e:
