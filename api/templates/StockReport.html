@@ -1,3 +1,5 @@
+
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -18,7 +20,7 @@
       .search-input {
         padding: 8px 12px;
         border-radius: 25px;
-        border: 1px solid #ff6b6b;
+        border: 1px solid #EF4444;
         width: 100%;
         font-size: 16px;
         color: #666;
@@ -27,7 +29,7 @@
         width: 50px;
         height: 50px;
         border-radius: 50%;
-        background-color: #ff6b6b;
+        background-color: #EF4444;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -44,13 +46,14 @@
       }
       .table-row {
         border-bottom: 1px solid #ffe0e0;
+        font-size: small;
       }
       .table-cell {
         padding: 12px 15px;
         text-align: center;
       }
       .table-cell:first-child {
-        text-align: left;
+        text-align: center;
       }
       .highlight-row {
         background-color: #fff8e1;
@@ -68,7 +71,7 @@
         width: 20px;
         height: 20px;
         border: 3px solid #f3f3f3;
-        border-top: 3px solid #ff6b6b;
+        border-top: 3px solid #EF4444;
         border-radius: 50%;
         animation: spin 1s linear infinite;
       }
@@ -89,16 +92,112 @@
         margin: 16px;
         text-align: center;
       }
+       .logo-container {
+      width: 80px;
+      height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(10px);
+    }
+     .stats-card {
+      background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+      border: 1px solid #e2e8f0;
+      transition: all 0.3s ease;
+    }
+
+    .stats-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    }
+       .dashboard-card {
+      background: linear-gradient(135deg, #EF4444 0%, #EF4444 100%);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .dashboard-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 100px;
+      height: 100px;
+      background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+    
+    /* Pagination Styles */
+    .pagination-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+    
+    .pagination-btn {
+      padding: 8px 12px;
+      border: 1px solid #e2e8f0;
+      background-color: white;
+      color: #4a5568;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+      min-width: 40px;
+      text-align: center;
+    }
+    
+    .pagination-btn:hover:not(:disabled) {
+      background-color: #f7fafc;
+      border-color: #cbd5e0;
+    }
+    
+    .pagination-btn.active {
+      background-color: #EF4444;
+      color: white;
+      border-color: #EF4444;
+    }
+    
+    .pagination-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    .pagination-info {
+      font-size: 14px;
+      color: #718096;
+      margin: 0 16px;
+    }
+    
+    .page-size-selector {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      color: #4a5568;
+    }
+    
+    .page-size-select {
+      padding: 4px 8px;
+      border: 1px solid #e2e8f0;
+      border-radius: 4px;
+      background-color: white;
+    }
     </style>
   </head>
   <body>
     <!-- Header -->
-    <header class="bg-red-500 text-white p-4 flex items-center justify-between">
+    <header class="bg-red-500 text-white p-2 flex items-center justify-between">
       <a href="{% url 'home' %}" class="flex items-center">
-        <i class="fas fa-chevron-left text-lg"></i>
+                <i class="fas fa-house md:pl-20 pl-5 text-lg"></i>
+
       </a>
-      <h1 class="text-xl font-bold">Stock Report</h1>
-      <div class="flex items-center space-x-4">
+       <div class="logo-container" >
+           <img src="{% static 'images\omegawhite.png' %}" alt="">
+          </div>
+      <div class="flex items-center space-x-4 md:pr-20 pr-5">
         <a href="#" class="relative" id="filter-button">
           <i class="fas fa-filter text-xl"></i>
           <span
@@ -199,8 +298,40 @@
       </div>
     </div>
 
+     <div class="dashboard-card rounded-2xl p-6 mb-6 text-white mt-5 md:mx-20 mx-3">
+      <div class="flex items-center justify-center  mb-4">
+       
+         
+            <h2 class="text-2xl font-bold text-center">Stock Report</h2>
+            <!-- <p class="text-white/80 text-sm">Inventory Management System</p> -->
+          
+        
+       
+      </div>
+      
+      <!-- Quick Stats -->
+      <div class="grid grid-cols-3 md:grid-cols-3 gap-2 md:gap-4 stats-grid">
+        <div class="stats-card rounded-xl p-4 text-center">
+          <div class="md:text-lg text-sm font-bold text-gray-800" id="total-items">0</div>
+          <div class="text-xs text-gray-600">Total Products</div>
+        </div>
+        <div class="stats-card rounded-xl p-4 text-center">
+          <div class="md:text-lg text-sm font-bold text-green-600" id="total-quantity">0</div>
+          <div class="text-xs text-gray-600">Total Quantity</div>
+        </div>
+        <div class="stats-card rounded-xl p-4 text-center">
+          <div class="md:text-lg text-sm font-bold text-blue-600" id="total-value">₹0</div>
+          <div class="text-xs text-gray-600">Total Cost</div>
+        </div>
+        <!-- <div class="stats-card rounded-xl p-4 text-center">
+          <div class="text-2xl font-bold text-orange-600">1</div>
+          <div class="text-sm text-gray-600">Low Stock</div>
+        </div> -->
+      </div>
+    </div>
+
     <!-- Search -->
-    <div class="p-4 bg-white flex items-center justify-between">
+    <div class="p-4 bg-white flex items-center justify-between md:mx-20 mx-2">
       <div class="relative flex-1 mr-3">
         <div class="relative">
           <input
@@ -227,7 +358,7 @@
     </div>
 
     <!-- Stock Table -->
-    <div class="px-3 pb-6" id="table-container">
+    <div class="px-3 pb-6 md:mx-20 mx-2" id="table-container">
       <div class="table-container">
         <div class="table-header grid grid-cols-3">
           <div class="table-cell text-sm">Product Name</div>
@@ -239,6 +370,36 @@
           <!-- Products will be loaded here -->
         </div>
       </div>
+      
+      <!-- Pagination Controls -->
+     <div class="bg-white px-4 py-3 border-t border-gray-200 sm:px-6 m-10">
+  <div class="flex flex-col space-y-4 sm:space-y-0 sm:flex-row sm:items-center sm:justify-between">
+    
+    <!-- Page size selector -->
+    <div class="flex items-center space-x-2">
+      <span class="text-sm">Show:</span>
+      <select id="page-size-select" class="border rounded px-2 py-1 text-sm">
+        <option value="10">10</option>
+        <option value="25">25</option>
+        <option value="50">50</option>
+        <option value="100">100</option>
+      </select>
+      <span class="text-sm">per page</span>
+    </div>
+    
+    <!-- Pagination info -->
+    <div class="text-sm text-center sm:text-left" id="pagination-info">
+      <!-- Pagination info will be inserted here -->
+    </div>
+    
+    <!-- Pagination buttons -->
+    <div class="flex justify-center sm:justify-end" id="pagination-container">
+      <!-- Pagination buttons will be inserted here -->
+    </div>
+    
+  </div>
+</div>
+
     </div>
 
     <!-- No Results Message -->
@@ -266,6 +427,18 @@
         product: null,
         brand: null,
         search: "",
+      };
+      
+      // Pagination variables
+      let currentPage = 1;
+      let pageSize = 10;
+      let totalItems = 0;
+      let totalPages = 0;
+      let allProductsData = []; // Store all products for client-side pagination
+      let dashboardStats = {
+        totalProducts: 0,
+        totalQuantity: 0,
+        totalValue: 0
       };
 
       // API Base URL - adjust this to your actual API endpoint
@@ -391,6 +564,7 @@
         document
           .getElementById("apply-filters-btn")
           .addEventListener("click", () => {
+            currentPage = 1; // Reset to first page when applying filters
             loadProducts();
             toggleFilterPanel();
           });
@@ -406,6 +580,16 @@
           .getElementById("search-input")
           .addEventListener("keypress", (e) => {
             if (e.key === "Enter") handleSearch();
+          });
+          
+        // Page size selector
+        document
+          .getElementById("page-size-select")
+          .addEventListener("change", (e) => {
+            pageSize = parseInt(e.target.value);
+            currentPage = 1; // Reset to first page
+            displayPaginatedProducts();
+            updatePaginationControls();
           });
       }
 
@@ -457,7 +641,21 @@
           const data = await response.json();
 
           if (data.success) {
-            displayProducts(data.data);
+            allProductsData = data.data || [];
+            totalItems = allProductsData.length;
+            totalPages = Math.ceil(totalItems / pageSize);
+            
+            // Calculate dashboard stats
+            calculateDashboardStats();
+            updateDashboard();
+            
+            // Reset to first page if current page exceeds total pages
+            if (currentPage > totalPages && totalPages > 0) {
+              currentPage = 1;
+            }
+            
+            displayPaginatedProducts();
+            updatePaginationControls();
           } else {
             throw new Error(data.error || "Failed to load products");
           }
@@ -473,6 +671,116 @@
         } finally {
           hideLoading();
         }
+      }
+      
+      function calculateDashboardStats() {
+        dashboardStats = {
+          totalProducts: allProductsData.length,
+          totalQuantity: allProductsData.reduce((sum, product) => {
+            return sum + (parseFloat(product.quantity) || 0);
+          }, 0),
+          totalValue: allProductsData.reduce((sum, product) => {
+            return sum + (parseFloat(product.billedcost) || 0);
+          }, 0)
+        };
+      }
+      
+      function updateDashboard() {
+        document.getElementById("total-items").textContent = dashboardStats.totalProducts;
+        document.getElementById("total-quantity").textContent = Math.round(dashboardStats.totalQuantity);
+        document.getElementById("total-value").textContent = `₹${dashboardStats.totalValue.toFixed(2)}`;
+      }
+      
+      function displayPaginatedProducts() {
+        const startIndex = (currentPage - 1) * pageSize;
+        const endIndex = startIndex + pageSize;
+        const paginatedData = allProductsData.slice(startIndex, endIndex);
+        
+        displayProducts(paginatedData);
+      }
+      
+      function updatePaginationControls() {
+        const paginationContainer = document.getElementById("pagination-container");
+        const paginationInfo = document.getElementById("pagination-info");
+        
+        // Update pagination info
+        const startItem = totalItems === 0 ? 0 : (currentPage - 1) * pageSize + 1;
+        const endItem = Math.min(currentPage * pageSize, totalItems);
+        paginationInfo.textContent = `Showing ${startItem}-${endItem} of ${totalItems} results`;
+        
+        // Clear existing pagination buttons
+        paginationContainer.innerHTML = "";
+        
+        if (totalPages <= 1) {
+          return; // Don't show pagination if only one page or no data
+        }
+        
+        // Previous button
+        const prevBtn = createPaginationButton("Previous", currentPage - 1, currentPage === 1);
+        prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
+        paginationContainer.appendChild(prevBtn);
+        
+        // Page numbers
+        const maxVisiblePages = 3;
+        let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+        let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+        
+        // Adjust start page if we're near the end
+        if (endPage - startPage + 1 < maxVisiblePages) {
+          startPage = Math.max(1, endPage - maxVisiblePages + 1);
+        }
+        
+        // First page and ellipsis
+        if (startPage > 1) {
+          paginationContainer.appendChild(createPaginationButton("1", 1));
+          if (startPage > 2) {
+            const ellipsis = document.createElement("span");
+            ellipsis.className = "pagination-btn";
+            ellipsis.textContent = "...";
+            ellipsis.style.cursor = "default";
+            paginationContainer.appendChild(ellipsis);
+          }
+        }
+        
+        // Page numbers
+        for (let i = startPage; i <= endPage; i++) {
+          const pageBtn = createPaginationButton(i.toString(), i, false, i === currentPage);
+          paginationContainer.appendChild(pageBtn);
+        }
+        
+        // Last page and ellipsis
+        if (endPage < totalPages) {
+          if (endPage < totalPages - 1) {
+            const ellipsis = document.createElement("span");
+            ellipsis.className = "pagination-btn";
+            ellipsis.textContent = "...";
+            ellipsis.style.cursor = "default";
+            paginationContainer.appendChild(ellipsis);
+          }
+          paginationContainer.appendChild(createPaginationButton(totalPages.toString(), totalPages));
+        }
+        
+        // Next button
+        const nextBtn = createPaginationButton("Next", currentPage + 1, currentPage === totalPages);
+        nextBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
+        paginationContainer.appendChild(nextBtn);
+      }
+      
+      function createPaginationButton(text, page, disabled = false, active = false) {
+        const button = document.createElement("button");
+        button.className = `pagination-btn ${active ? 'active' : ''}`;
+        button.textContent = text;
+        button.disabled = disabled;
+        
+        if (!disabled && !active) {
+          button.addEventListener("click", () => {
+            currentPage = page;
+            displayPaginatedProducts();
+            updatePaginationControls();
+          });
+        }
+        
+        return button;
       }
 
       async function loadStockCategories() {
@@ -568,6 +876,7 @@
           search: "",
         };
         document.getElementById("search-input").value = "";
+        currentPage = 1; // Reset to first page
         updateFilterIndicator();
       }
 
