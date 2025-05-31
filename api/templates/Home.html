@@ -60,13 +60,24 @@
       </div>
     </div>
     <script>
-      document
-        .getElementById("logout-btn")
-        .addEventListener("click", function (e) {
-          e.preventDefault();
-          localStorage.removeItem("token");
-          window.location.href = "/login/";
-        });
+     
+
+        //cdn.tailwindcss.com
+      document.getElementById("logout-btn").addEventListener("click", function (e) {
+    e.preventDefault(); // Prevent default link behavior
+
+    // Show a confirmation dialog
+    const confirmed = confirm("Are you sure you want to log out?");
+
+    // Proceed only if user confirms
+    if (confirmed) {
+      localStorage.removeItem("token");
+      window.location.href = "/login/";
+    } else {
+      // Do nothing if user cancels
+      return;
+    }
+  })
     </script>
   </body>
 </html>
