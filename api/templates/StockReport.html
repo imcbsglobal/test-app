@@ -1038,5 +1038,15 @@
         }
       });
     </script>
+
+
+  <script>
+  document.getElementById("logout-btn").addEventListener("click", function (event) {
+    const confirmLogout = confirm("Are you sure you want to logout?");
+    if (!confirmLogout) {
+      event.preventDefault(); // Stop logout if cancelled
+    }
+  });
+</script>
   </body>
 </html>
