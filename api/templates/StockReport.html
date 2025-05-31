@@ -188,6 +188,10 @@
         border-radius: 4px;
         background-color: white;
       }
+      #logout-btn:active {
+  color: white !important;
+}
+
     </style>
   </head>
   <body>
@@ -199,7 +203,8 @@
       <div class="logo-container">
         <img src="{% static 'images\omegawhite.png' %}" alt="" />
       </div>
-      <div class="flex items-center space-x-4 md:pr-20 pr-5">
+          <div class="flex items-center space-x-6 md:space-x-10  md:pr-18 pr-3">
+
         <a href="#" class="relative" id="filter-button">
           <i class="fas fa-filter text-xl"></i>
           <span
@@ -207,7 +212,7 @@
             class="hidden absolute -top-1 -right-1 w-2 h-2 bg-yellow-400 rounded-full"
           ></span>
         </a>
-        <button id="logout-btn" class="text-white hover:text-red-200">
+        <button id="logout-btn" class="text-white ">
           <i class="fas fa-sign-out-alt text-xl"></i>
         </button>
       </div>
@@ -225,8 +230,8 @@
       id="filter-panel"
       class="hidden fixed top-16 right-5 shadow-xl bg-white rounded-lg z-10 w-64 border border-gray-200"
     >
-      <div class="p-3 border-b border-gray-200 font-medium text-gray-700">
-        Filter By
+      <div class="p-3 border-b border-gray-200  text-gray-700">
+        Filter By<span id="selected-filters" class="text-red-500 text-base ml-2 text-xs"></span>
       </div>
       <ul>
         <li
@@ -461,7 +466,7 @@
       };
 
       // API Base URL - adjust this to your actual API endpoint
-      const API_BASE_URL = "https://omega.imcbs.com/api";
+      const API_BASE_URL = "http://127.0.0.1:8000/api";
 
       // Authentication utilities
       function getAuthToken() {
@@ -541,7 +546,17 @@
 
       function setupEventListeners() {
         // Logout button
-        document.getElementById("logout-btn").addEventListener("click", logout);
+      
+      document.getElementById("logout-btn").addEventListener("click", function (event) {
+          const confirmLogout = confirm("Are you sure you want to logout?");
+          if (confirmLogout) {
+            localStorage.removeItem("token");
+            window.location.href = "/login/";
+          }
+          // else: do nothing
+        });
+
+
 
         // Filter panel toggle
         document
@@ -930,20 +945,29 @@
         updateFilterIndicator();
       }
 
-      function updateFilterIndicator() {
-        const filterDot = document.getElementById("filter-dot");
-        const hasFilters =
-          currentFilters.stockCategory ||
-          currentFilters.product ||
-          currentFilters.brand ||
-          currentFilters.search;
+         function updateFilterIndicator() {
+  const filterDot = document.getElementById("filter-dot");
+  const selectedFiltersSpan = document.getElementById("selected-filters");
+  const { stockCategory, product, brand } = currentFilters;
 
-        if (hasFilters) {
-          filterDot.classList.remove("hidden");
-        } else {
-          filterDot.classList.add("hidden");
-        }
-      }
+  const hasFilters = stockCategory || product || brand;
+
+  if (hasFilters) {
+    filterDot.classList.remove("hidden");
+
+    const selected = [];
+    if (stockCategory) selected.push(stockCategory);
+    if (product) selected.push(product);
+    if (brand) selected.push(brand);
+
+    selectedFiltersSpan.textContent = `(${selected.join(' / ')})`;
+  } else {
+    filterDot.classList.add("hidden");
+    selectedFiltersSpan.textContent = "";
+  }
+}
+ 
+     
 
       function toggleFilterPanel() {
         const filterPanel = document.getElementById("filter-panel");
@@ -1040,13 +1064,13 @@
     </script>
 
 
-  <script>
+  <!-- <script>
   document.getElementById("logout-btn").addEventListener("click", function (event) {
     const confirmLogout = confirm("Are you sure you want to logout?");
     if (!confirmLogout) {
       event.preventDefault(); // Stop logout if cancelled
     }
   });
-</script>
+</script> -->
   </body>
 </html>
