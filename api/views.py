@@ -7,8 +7,8 @@ from rest_framework import status
 from django.shortcuts import render
 from datetime import datetime, timedelta
 from django.conf import settings
-from .models import AdminCredential, AccInvDetails, AccInvMast, AccProduct, AccProduction, AccProductionDetails, AccPurchaseDetails, AccPurchaseMaster
-from .serializers import AdminCredentialSerializer, AccInvDetailsSerializer, AccInvMastSerializer, AccProductSerializer, AccProductionDetailsSerializer, AccPurchaseDetailsSerializer, AccPurchaseMasterSerializer
+from .models import  AccInvDetails, AccInvMast, AccProduct, AccProduction, AccProductionDetails, AccPurchaseDetails, AccPurchaseMaster, AccUsers
+from .serializers import  AccInvDetailsSerializer, AccInvMastSerializer, AccProductSerializer, AccProductionDetailsSerializer, AccPurchaseDetailsSerializer, AccPurchaseMasterSerializer
 from django.contrib.auth.hashers import check_password
 import jwt
 from django.db.models import Q, Sum
@@ -37,24 +37,48 @@ class LoginView(APIView):
         username = request.data.get('username')
         password = request.data.get('password')
 
-        try:
-            user = AdminCredential.objects.get(username=username)
-        except AdminCredential.DoesNotExist:
-            return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+        #print(f"USERNAME: {username}, PASSWORD: {password}")
 
-        if user.password != password:
+        try:
+            user = AccUsers.objects.get(id=username)
+            print(f"DB PASSWORD: {user.pass_field}")
+
+            # Detailed debugging
+            # print(f"Password from request: '{password}' (length: {len(password)})")
+            # print(f"Password from DB: '{user.pass_field}' (length: {len(user.pass_field)})")
+            # print(f"Password repr from request: {repr(password)}")
+            # print(f"Password repr from DB: {repr(user.pass_field)}")
+            
+            # Try with stripped versions
+            password_stripped = password.strip() if password else ""
+            db_password_stripped = user.pass_field.strip() if user.pass_field else ""
+            
+            #print(f"Stripped comparison: '{password_stripped}' == '{db_password_stripped}' = {password_stripped == db_password_stripped}")
+            
+            password_match = user.pass_field == password
+            #print(f"Direct password match result: {password_match}")
+        
+            # Use stripped version for comparison
+            if db_password_stripped != password_stripped:
+                print("Password comparison failed - returning 401")
+                return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+        
+            print("Password comparison passed - generating token")
+            
+        except AccUsers.DoesNotExist:
+            print("User not found")
             return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
 
         payload = {
-            'username': user.username,
-            'exp': datetime.utcnow() + timedelta(days=365),  # Token valid for 1 year
+            'username': user.id,
+            'exp': datetime.utcnow() + timedelta(days=365),
             'iat': datetime.utcnow()
         }
 
         token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
+        #print(f"Token generated: {token}")
 
         return Response({'token': token})
-    
 
 # LOGOUT VIEW
 class LogoutView(APIView):

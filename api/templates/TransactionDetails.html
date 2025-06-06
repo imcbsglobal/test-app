@@ -77,7 +77,19 @@
       }
 
       .table-cell:first-child {
-        text-align: center;
+        text-align: left;
+      }
+
+      .table-cell:nth-child(2) {
+        text-align: right;
+      }
+
+      .table-cell:nth-child(3) {
+        text-align: right;
+      }
+
+      .table-cell:last-child {
+        text-align: right;
       }
 
       .dropdown-content {
@@ -506,11 +518,19 @@
     <!-- Transaction Table -->
     <div class="px-3 pb-6 md:mx-20 mx-2" id="table-container">
       <div class="table-container">
-        <div class="table-header grid grid-cols-4">
-          <div class="table-cell px-1 text-sm md:text-md">Product Name</div>
-          <div class="table-cell px-1 text-sm md:text-md">Sales Qty</div>
-          <div class="table-cell px-1 text-sm md:text-md">Purchase Qty</div>
-          <div class="table-cell px-1 text-sm md:text-md">Production Qty</div>
+        <div class="table-header grid grid-cols-4 px-3">
+          <div class="table-cell px-1 text-sm md:text-md text-center">
+            Product Name
+          </div>
+          <div class="table-cell px-1 text-sm md:text-md text-center">
+            Sales Qty
+          </div>
+          <div class="table-cell px-1 text-sm md:text-md text-center">
+            Purchase Qty
+          </div>
+          <div class="table-cell px-1 text-sm md:text-md text-center">
+            Production Qty
+          </div>
         </div>
 
         <div id="transactions-table-body">
@@ -594,8 +614,8 @@
       let isDateFiltered = false;
       let originalTransactionData = [];
       // API Base URL
-      // const API_BASE_URL = "http://127.0.0.1:8000/api";
-      const API_BASE_URL = "https://omega.imcbs.com";
+      const API_BASE_URL = "http://127.0.0.1:8000/api";
+      //const API_BASE_URL = "https://omega.imcbs.com";
 
       // Authentication utilities
       function getAuthToken() {

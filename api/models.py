@@ -1,17 +1,17 @@
 # api/models.py
 from django.db import models
 
-class AdminCredential(models.Model):
-    username = models.CharField(max_length=150, unique=True)
-    password = models.CharField(max_length=255)
+class AccUsers(models.Model):
+    id = models.CharField(max_length=30, primary_key=True)
+    pass_field = models.CharField(max_length=100, db_column='pass')
 
     class Meta:
-        db_table = 'admin_credentials'  # table name
+        db_table = 'acc_users'
         managed = False  # Django won't create/migrate this table
 
     def __str__(self):
-        return self.username
-    
+        return self.id
+
 
 class AccInvDetails(models.Model):
     invno = models.DecimalField(max_digits=10, decimal_places=0)

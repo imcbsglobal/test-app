@@ -1,14 +1,11 @@
 # api/serializers.py
 from rest_framework import serializers
-from .models import AdminCredential, AccInvDetails, AccInvMast, AccProduct, AccProduction, AccProductionDetails, AccPurchaseDetails, AccPurchaseMaster
+from .models import AccInvDetails, AccInvMast, AccProduct, AccProduction, AccProductionDetails, AccPurchaseDetails, AccPurchaseMaster, AccUsers
 
-class AdminCredentialSerializer(serializers.ModelSerializer):
+class AccUsersSerializer(serializers.ModelSerializer):
     class Meta:
-        model = AdminCredential
-        fields = ['username', 'password']  # include password if you need it (be cautious)
-        extra_kwargs = {
-            'password': {'write_only': True}  # hide password in responses for security
-        }
+        model = AccUsers
+        fields = ['id', 'pass_field']
 
 
 class AccInvDetailsSerializer(serializers.ModelSerializer):
