@@ -262,9 +262,35 @@
   <body>
     <!-- Header -->
     <header class="bg-red-500 text-white p-2 flex items-center justify-between">
-      <a href="{% url 'home' %}" class="flex items-center">
-        <i class="fas fa-house md:pl-20 pl-5 text-lg"></i>
-      </a>
+      <!-- Hamburger Icon with Dropdown -->
+      <div class="relative">
+        <button id="menuButton" class="text-xl p-2 focus:outline-none">
+          <i class="fas fa-bars text-white"></i>
+        </button>
+
+        <!-- Dropdown Menu -->
+        <div
+          id="dropdownMenu"
+          class="absolute left-[10px] mt-2 w-[250px] bg-white border rounded shadow-lg hidden z-50"
+        >
+          <a
+            href="{% url 'stock' %}"
+            class="flex items-center gap-3 px-4 py-4 hover:bg-gray-100 text-black {% if request.resolver_match.url_name == 'stock' %}text-red-500{% endif %}"
+          >
+            <i class="fa-solid fa-box-open text-red-500"></i>
+            Stock Report
+          </a>
+
+          <a
+            href="{% url 'transaction' %}"
+            class="flex items-center gap-3 px-4 py-4 hover:bg-gray-100 text-black {% if request.resolver_match.url_name == 'transaction' %}text-red-500{% endif %}"
+          >
+            <i class="fa-solid fa-indian-rupee-sign text-red-500"></i>
+            Transaction Details
+          </a>
+        </div>
+      </div>
+
       <div class="logo-container">
         <img src="{% static 'images\omegawhite.png' %}" alt="" />
       </div>
@@ -447,12 +473,14 @@
     </div>
 
     <!-- Stock Table -->
-    <div class="px-3 pb-6 md:mx-20 mx-2" id="table-container">
+    <div class="px-0 md:px-3 pb-6 md:mx-20 mx-2" id="table-container">
       <div class="table-container">
-        <div class="table-header grid grid-cols-3">
-          <div class="table-cell text-sm text-center">Product Name</div>
-          <div class="table-cell text-sm text-center">Quantity</div>
-          <div class="table-cell text-sm text-center">Cost</div>
+        <div class="table-header text-xs md:text-sm grid grid-cols-3">
+          <div class="table-cell text-xs md:text-sm text-center">
+            Product Name
+          </div>
+          <div class="table-cell text-xs md:text-sm text-center">Quantity</div>
+          <div class="table-cell text-xs md:text-sm text-center">Cost</div>
         </div>
 
         <div id="products-table-body">
@@ -536,8 +564,8 @@
       };
 
       // API Base URL - adjust this to your actual API endpoint
-      //const API_BASE_URL = "http://127.0.0.1:8000/api";
-      const API_BASE_URL = "https://omega.imcbs.com";
+      const API_BASE_URL = "http://127.0.0.1:8000/api";
+      //const API_BASE_URL = "https://omega.imcbs.com";
 
       // Authentication utilities
       function getAuthToken() {
@@ -613,6 +641,27 @@
         hideAuthError();
         loadInitialData();
         setupEventListeners();
+      });
+
+      // Hamburger menu script
+
+      document.addEventListener("DOMContentLoaded", function () {
+        const menuButton = document.getElementById("menuButton");
+        const dropdownMenu = document.getElementById("dropdownMenu");
+
+        menuButton.addEventListener("click", function () {
+          dropdownMenu.classList.toggle("hidden");
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener("click", function (e) {
+          if (
+            !menuButton.contains(e.target) &&
+            !dropdownMenu.contains(e.target)
+          ) {
+            dropdownMenu.classList.add("hidden");
+          }
+        });
       });
 
       function setupEventListeners() {
