@@ -364,61 +364,67 @@
 
   <body>
     <!-- Header -->
-    <header class="bg-red-500 text-white p-2 flex items-center justify-between">
-      <!-- Hamburger Icon with Dropdown -->
-      <div class="relative">
-        <button id="menuButton" class="text-xl p-2 focus:outline-none">
-          <i class="fas fa-bars text-white"></i>
-        </button>
+    <header class="bg-red-500 text-white p-2">
+      <!-- Main header row -->
+      <div class="flex items-center justify-between">
+        <!-- Hamburger Icon with Dropdown -->
+        <div class="relative">
+          <button id="menuButton" class="text-xl p-2 focus:outline-none">
+            <i class="fas fa-bars text-white"></i>
+          </button>
 
-        <!-- Dropdown Menu -->
-        <div
-          id="dropdownMenu"
-          class="absolute left-[10px] mt-2 w-56 bg-white border rounded shadow-lg hidden z-50"
-        >
-          <a
-            href="{% url 'stock' %}"
-            class="flex items-center gap-3 px-4 py-4 hover:bg-gray-100 text-black {% if request.resolver_match.url_name == 'stock' %}text-red-500{% endif %}"
+          <!-- Dropdown Menu -->
+          <div
+            id="dropdownMenu"
+            class="absolute left-[10px] mt-2 w-[250px] bg-white border rounded shadow-lg hidden z-50"
           >
-            <i class="fa-solid fa-box-open text-red-500"></i>
-            Stock Report
-          </a>
+            <a
+              href="{% url 'stock' %}"
+              class="flex items-center gap-3 px-4 py-4 hover:bg-gray-100 text-black {% if request.resolver_match.url_name == 'stock' %}text-red-500{% endif %}"
+            >
+              <i class="fa-solid fa-box-open text-red-500"></i>
+              Stock Report
+            </a>
 
-          <a
-            href="{% url 'transaction' %}"
-            class="flex items-center gap-3 px-4 py-4 hover:bg-gray-100 text-black {% if request.resolver_match.url_name == 'transaction' %}text-red-500{% endif %}"
-          >
-            <i class="fa-solid fa-indian-rupee-sign text-red-500"></i>
-            Transaction Details
-          </a>
-        </div>
-      </div>
-
-      <!-- Logo -->
-      <div class="logo-container">
-        <img src="{% static 'images/omegawhite.png' %}" alt="Logo" />
-      </div>
-
-      <!-- Right Icons -->
-      <div class="flex items-center space-x-6 md:space-x-10 md:pr-18 pr-3">
-        <!-- Username Display -->
-        <div class="flex items-center space-x-2 text-white">
-          <i class="fas fa-user text-sm"></i>
-          <span id="username-display" class="text-sm font-medium"
-            >Loading...</span
-          >
+            <a
+              href="{% url 'transaction' %}"
+              class="flex items-center gap-3 px-4 py-4 hover:bg-gray-100 text-black {% if request.resolver_match.url_name == 'transaction' %}text-red-500{% endif %}"
+            >
+              <i class="fa-solid fa-indian-rupee-sign text-red-500"></i>
+              Transaction Details
+            </a>
+          </div>
         </div>
 
-        <a href="#" class="relative" id="filter-button">
-          <i class="fas fa-filter text-xl"></i>
-          <span
-            id="filter-dot"
-            class="hidden absolute -top-1 -right-1 w-2 h-2 bg-yellow-400 rounded-full"
-          ></span>
-        </a>
-        <button id="logout-btn" class="text-white">
-          <i class="fas fa-sign-out-alt text-xl"></i>
-        </button>
+        <!-- Logo Container -->
+        <div class="logo-container">
+          <img src="{% static 'images\omegawhite.png' %}" alt="" />
+        </div>
+
+        <!-- Right side container -->
+        <div class="flex flex-col gap-4 mt-3 items-end space-y-2 md:pr-18 pr-3">
+          <!-- Buttons row -->
+          <div class="flex items-center space-x-6 md:space-x-10">
+            <a href="#" class="relative" id="filter-button">
+              <i class="fas fa-filter text-xl"></i>
+              <span
+                id="filter-dot"
+                class="hidden absolute -top-1 -right-1 w-2 h-2 bg-yellow-400 rounded-full"
+              ></span>
+            </a>
+            <button id="logout-btn" class="text-white">
+              <i class="fas fa-sign-out-alt text-xl"></i>
+            </button>
+          </div>
+
+          <!-- Username row -->
+          <div class="flex items-center space-x-2 text-white">
+            <i class="fas fa-user text-sm"></i>
+            <span id="username-display" class="text-sm font-medium">
+              Loading...
+            </span>
+          </div>
+        </div>
       </div>
     </header>
 
@@ -815,8 +821,8 @@
         product: false,
       };
       // API Base URL
-      //const API_BASE_URL = "http://127.0.0.1:8000/api";
-      const API_BASE_URL = "https://omega.imcbs.com";
+      const API_BASE_URL = "http://127.0.0.1:8000/api";
+      //const API_BASE_URL = "https://omega.imcbs.com";
 
       // Authentication utilities
       function getAuthToken() {
