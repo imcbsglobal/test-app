@@ -109,6 +109,7 @@
 
           if (res.ok) {
             localStorage.setItem("token", result.token);
+            localStorage.setItem("username", result.username);
             window.location.href = "/home/";
           } else {
             errorMsg.textContent = result.error || "Invalid credentials.";

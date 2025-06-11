@@ -78,7 +78,7 @@ class LoginView(APIView):
         token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
         #print(f"Token generated: {token}")
 
-        return Response({'token': token})
+        return Response({'token': token, 'username': user.id})
 
 # LOGOUT VIEW
 class LogoutView(APIView):

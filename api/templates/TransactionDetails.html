@@ -287,7 +287,7 @@
         overflow-y: auto;
         padding-top: 0;
       }
-      /* Enhanced tick button styles */
+      /* tick button styles */
       .tick-btn {
         position: relative;
         overflow: hidden;
@@ -401,6 +401,14 @@
 
       <!-- Right Icons -->
       <div class="flex items-center space-x-6 md:space-x-10 md:pr-18 pr-3">
+        <!-- Username Display -->
+        <div class="flex items-center space-x-2 text-white">
+          <i class="fas fa-user text-sm"></i>
+          <span id="username-display" class="text-sm font-medium"
+            >Loading...</span
+          >
+        </div>
+
         <a href="#" class="relative" id="filter-button">
           <i class="fas fa-filter text-xl"></i>
           <span
@@ -807,8 +815,8 @@
         product: false,
       };
       // API Base URL
-      //const API_BASE_URL = "http://127.0.0.1:8000/api";
-      const API_BASE_URL = "https://omega.imcbs.com";
+      const API_BASE_URL = "http://127.0.0.1:8000/api";
+      //const API_BASE_URL = "https://omega.imcbs.com";
 
       // Authentication utilities
       function getAuthToken() {
@@ -818,6 +826,15 @@
           return null;
         }
         return token;
+      }
+
+      function getUsername() {
+        const userName = localStorage.getItem("username");
+        if (!userName) {
+          showAuthError();
+          return null;
+        }
+        return userName;
       }
 
       function getAuthHeaders() {
@@ -917,6 +934,20 @@
           },
         });
       }
+
+      // Initialize username display when page loads
+      document.addEventListener("DOMContentLoaded", function () {
+        const usernameDisplay = document.getElementById("username-display");
+
+        if (usernameDisplay) {
+          const username = getUsername();
+          if (username) {
+            usernameDisplay.textContent = username;
+          } else {
+            usernameDisplay.textContent = "Guest";
+          }
+        }
+      });
 
       function setupEventListeners() {
         // Logout button
@@ -1793,7 +1824,7 @@
             "text-gray-700",
             "border-gray-300"
           );
-          tickBtn.classList.add("bg-red-500", "text-white", "border-red-500");
+          tickBtn.classList.add("bg-red-500", "border-red-500");
         } else {
           tickBtn.classList.remove(
             "bg-red-500",
