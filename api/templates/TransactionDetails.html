@@ -287,6 +287,78 @@
         overflow-y: auto;
         padding-top: 0;
       }
+      /* Enhanced tick button styles */
+      .tick-btn {
+        position: relative;
+        overflow: hidden;
+        font-weight: 500;
+        user-select: none;
+      }
+
+      .tick-btn:active {
+        transform: scale(0.98);
+      }
+
+      /* Active state for exclude zero buttons */
+      .tick-btn.bg-red-500 {
+        box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
+      }
+
+      /* Mobile-specific improvements */
+      @media (max-width: 640px) {
+        .tick-btn {
+          font-size: 12px;
+          padding: 8px 12px;
+        }
+
+        .tick-btn i {
+          font-size: 11px;
+        }
+      }
+
+      /* Smooth transitions for all interactive elements */
+      .tick-btn,
+      .pagination-btn,
+      .filter-btn {
+        transition: all 0.2s ease-in-out;
+      }
+
+      /* Better focus states for accessibility */
+      .tick-btn:focus-within,
+      input[type="checkbox"]:focus + .tick-btn {
+        outline: 2px solid #3b82f6;
+        outline-offset: 2px;
+      }
+
+      /* Loading state for buttons */
+      .tick-btn.loading {
+        opacity: 0.7;
+        pointer-events: none;
+      }
+
+      /* Better responsive container */
+      @media (max-width: 768px) {
+        .bg-white.rounded-lg.shadow-sm {
+          margin: 0 -0.5rem;
+          border-radius: 0;
+        }
+      }
+
+      /* Animation for active filter indicator */
+      #active-exclude-filter {
+        animation: slideDown 0.3s ease-out;
+      }
+
+      @keyframes slideDown {
+        from {
+          opacity: 0;
+          transform: translateY(-10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
     </style>
   </head>
 
@@ -369,7 +441,7 @@
           <div class="text-lg font-bold text-green-600" id="total-sales">
             ...
           </div>
-          <div class="text-xs text-gray-600">Total Sales</div>
+          <div class="text-xs text-gray-600">Total Sales Qty</div>
         </div>
         <div class="stats-card rounded-xl p-4 text-center">
           <div class="text-lg font-bold text-blue-600" id="total-production">
@@ -381,7 +453,7 @@
           <div class="text-lg font-bold text-purple-600" id="total-product-qty">
             ...
           </div>
-          <div class="text-xs text-gray-600">Total Product Qty</div>
+          <div class="text-xs text-gray-600">Total Production Qty</div>
         </div>
       </div>
     </div>
@@ -536,6 +608,92 @@
           </button>
         </div>
       </div>
+
+      <!-- Tick Filter Buttons -->
+      <div class="bg-white rounded-lg shadow-sm p-3 md:p-4 mb-4">
+        <div class="flex flex-col space-y-3">
+          <!-- Title -->
+          <div class="flex items-center justify-between">
+            <h3 class="text-sm md:text-base font-medium text-gray-700">
+              Exclude Zero Quantities
+            </h3>
+            <span class="text-xs text-gray-500 hidden md:inline"
+              >Select one filter at a time</span
+            >
+          </div>
+
+          <!-- Mobile hint -->
+          <p class="text-xs text-gray-500 md:hidden">
+            Tap to show only non-zero quantities
+          </p>
+
+          <!-- Filter buttons -->
+          <div class="flex flex-col sm:flex-row gap-2 sm:gap-3">
+            <!-- Sales -->
+            <label
+              class="flex-1 flex items-center justify-center cursor-pointer"
+            >
+              <input
+                type="checkbox"
+                class="data-toggle-checkbox hidden"
+                data-type="sales"
+              />
+              <span
+                class="w-full text-center px-3 py-2 text-sm rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-red-50 hover:border-red-300 transition-all duration-200 tick-btn"
+              >
+                <i class="fas fa-chart-line mr-1 md:mr-2"></i>
+                <span class="hidden sm:inline">Sales </span>Qty
+              </span>
+            </label>
+
+            <!-- Purchase -->
+            <label
+              class="flex-1 flex items-center justify-center cursor-pointer"
+            >
+              <input
+                type="checkbox"
+                class="data-toggle-checkbox hidden"
+                data-type="purchase"
+              />
+              <span
+                class="w-full text-center px-3 py-2 text-sm rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-blue-50 hover:border-blue-300 transition-all duration-200 tick-btn"
+              >
+                <i class="fas fa-shopping-cart mr-1 md:mr-2"></i>
+                <span class="hidden sm:inline">Purchase </span>Qty
+              </span>
+            </label>
+
+            <!-- Production -->
+            <label
+              class="flex-1 flex items-center justify-center cursor-pointer"
+            >
+              <input
+                type="checkbox"
+                class="data-toggle-checkbox hidden"
+                data-type="product"
+              />
+              <span
+                class="w-full text-center px-3 py-2 text-sm rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-green-50 hover:border-green-300 transition-all duration-200 tick-btn"
+              >
+                <i class="fas fa-industry mr-1 md:mr-2"></i>
+                <span class="hidden sm:inline">Production </span>Qty
+              </span>
+            </label>
+          </div>
+
+          <!-- Active filter indicator -->
+          <div id="active-exclude-filter" class="hidden">
+            <div class="bg-red-50 border-l-4 border-red-400 p-2 rounded">
+              <div class="flex items-center">
+                <i class="fas fa-filter text-red-400 mr-2"></i>
+                <span class="text-sm text-red-700" id="active-filter-text"
+                  >Showing non-zero values</span
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Loading Indicator -->
@@ -642,6 +800,12 @@
       let pageSize = 10;
       let isDateFiltered = false;
       let originalTransactionData = [];
+
+      let excludeZeroFilters = {
+        sales: false,
+        purchase: false,
+        product: false,
+      };
       // API Base URL
       //const API_BASE_URL = "http://127.0.0.1:8000/api";
       const API_BASE_URL = "https://omega.imcbs.com";
@@ -833,6 +997,7 @@
             currentPage = 1;
             updatePaginatedTransactions();
           });
+        setupExcludeZeroEventListeners();
       }
       document.getElementById("search-button").addEventListener("click", () => {
         if (hasValidDateRange()) {
@@ -1025,19 +1190,106 @@
 
         currentPage = 1; // Reset to first page
         updatePaginatedTransactions();
-        updatePaginationControls();
       }
 
       function updatePaginatedTransactions() {
+        // Apply exclude zero filters before pagination
+        let filteredData = [...allTransactionData];
+
+        // Check if any exclude zero filter is active
+        const hasExcludeFilter =
+          excludeZeroFilters.sales ||
+          excludeZeroFilters.purchase ||
+          excludeZeroFilters.product;
+
+        // Apply exclude zero filters
+        if (hasExcludeFilter) {
+          filteredData = filteredData.filter((transaction) => {
+            const salesQty = isDateFiltered
+              ? transaction.sales_quantity || 0
+              : transaction.inv_quantity || 0;
+            const purchaseQty = isDateFiltered
+              ? transaction.purchase_quantity || 0
+              : transaction.purchase_quantity || 0;
+            const productionQty = isDateFiltered
+              ? transaction.production_quantity || 0
+              : transaction.production_quantity || 0;
+
+            if (excludeZeroFilters.sales) {
+              return salesQty > 0;
+            }
+            if (excludeZeroFilters.purchase) {
+              return purchaseQty > 0;
+            }
+            if (excludeZeroFilters.product) {
+              return productionQty > 0;
+            }
+
+            return true;
+          });
+        }
+
         const start = (currentPage - 1) * pageSize;
         const end = start + pageSize;
-        const paginated = allTransactionData.slice(start, end);
+        const paginated = filteredData.slice(start, end);
 
-        // Update dashboard with ALL filtered data (not just paginated)
-        updateDashboardStats(allTransactionData, isDateFiltered);
+        // Update dashboard with filtered data (not just paginated)
+        updateDashboardStats(filteredData, isDateFiltered);
 
         // Display only paginated data in table
         displayPaginatedTable(paginated, isDateFiltered);
+
+        // Update pagination info with filtered count
+        updatePaginationControlsWithFilteredData(filteredData.length);
+      }
+
+      // Add new function for pagination with filtered data
+      function updatePaginationControlsWithFilteredData(filteredTotal) {
+        const container = document.getElementById("pagination-container");
+        const info = document.getElementById("pagination-info");
+
+        const totalPages = Math.ceil(filteredTotal / pageSize);
+
+        const start =
+          filteredTotal === 0 ? 0 : (currentPage - 1) * pageSize + 1;
+        const end = Math.min(currentPage * pageSize, filteredTotal);
+        info.textContent = `Showing ${start}-${end} of ${filteredTotal} results`;
+
+        container.innerHTML = "";
+
+        if (totalPages <= 1) return;
+
+        const createBtn = (text, page, active = false, disabled = false) => {
+          const btn = document.createElement("button");
+          btn.className = `pagination-btn ${active ? "active" : ""}`;
+          btn.textContent = text;
+          btn.disabled = disabled;
+          if (!disabled) {
+            btn.addEventListener("click", () => {
+              currentPage = page;
+              updatePaginatedTransactions();
+            });
+          }
+          return btn;
+        };
+
+        // Previous
+        container.appendChild(
+          createBtn("←", currentPage - 1, false, currentPage === 1)
+        );
+
+        // Pages
+        const maxPages = 3;
+        let startPage = Math.max(1, currentPage - 1);
+        let endPage = Math.min(startPage + maxPages - 1, totalPages);
+        for (let i = startPage; i <= endPage; i++) {
+          container.appendChild(createBtn(i, i, i === currentPage));
+        }
+
+        // Next
+        container.appendChild(
+          createBtn("→", currentPage + 1, false, currentPage === totalPages)
+        );
       }
 
       function updatePaginationControls() {
@@ -1458,6 +1710,136 @@
           }
         });
       });
+
+      // Check box functionality
+      function setupExcludeZeroEventListeners() {
+        // Get all exclude zero checkboxes
+        const excludeCheckboxes = document.querySelectorAll(
+          ".data-toggle-checkbox"
+        );
+
+        excludeCheckboxes.forEach((checkbox) => {
+          checkbox.addEventListener("change", function () {
+            const type = this.dataset.type;
+            const isChecked = this.checked;
+
+            // If this checkbox is being checked, uncheck others
+            if (isChecked) {
+              excludeZeroFilters = {
+                sales: false,
+                purchase: false,
+                product: false,
+              };
+
+              // Uncheck all other checkboxes and update their UI
+              excludeCheckboxes.forEach((otherCheckbox) => {
+                if (otherCheckbox !== this) {
+                  otherCheckbox.checked = false;
+                  updateExcludeZeroUI(otherCheckbox.dataset.type, false);
+                }
+              });
+
+              // Set current filter
+              excludeZeroFilters[type] = true;
+              updateExcludeZeroUI(type, true);
+
+              // Show active filter indicator
+              showActiveFilterIndicator(type);
+            } else {
+              // If unchecking, just remove this filter
+              excludeZeroFilters[type] = false;
+              updateExcludeZeroUI(type, false);
+
+              // Hide active filter indicator
+              document
+                .getElementById("active-exclude-filter")
+                .classList.add("hidden");
+            }
+
+            // Refresh data based on current state
+            refreshDataWithFilters();
+          });
+        });
+
+        // Add event listener for clear button
+        const clearBtn = document.getElementById("clear-exclude-filter-btn");
+        if (clearBtn) {
+          clearBtn.addEventListener("click", clearExcludeZeroFilters);
+        }
+      }
+
+      // Add function to show active filter indicator
+      function showActiveFilterIndicator(type) {
+        const indicator = document.getElementById("active-exclude-filter");
+        const textElement = document.getElementById("active-filter-text");
+
+        const typeNames = {
+          sales: "Sales",
+          purchase: "Purchase",
+          product: "Production",
+        };
+
+        textElement.textContent = `Showing non-zero ${typeNames[type]} quantities only`;
+        indicator.classList.remove("hidden");
+      }
+
+      function updateExcludeZeroUI(type, isActive) {
+        const checkbox = document.querySelector(`[data-type="${type}"]`);
+        const tickBtn = checkbox.nextElementSibling;
+
+        if (isActive) {
+          tickBtn.classList.remove(
+            "bg-white",
+            "text-gray-700",
+            "border-gray-300"
+          );
+          tickBtn.classList.add("bg-red-500", "text-white", "border-red-500");
+        } else {
+          tickBtn.classList.remove(
+            "bg-red-500",
+            "text-white",
+            "border-red-500"
+          );
+          tickBtn.classList.add("bg-white", "text-gray-700", "border-gray-300");
+        }
+      }
+
+      function refreshDataWithFilters() {
+        // Clear search input when applying new filters
+        document.getElementById("search-input").value = "";
+
+        if (hasValidDateRange()) {
+          loadTransactionsByDate();
+        } else {
+          loadTransactionSummary();
+        }
+      }
+      // Add this new function to clear exclude zero filters
+      function clearExcludeZeroFilters() {
+        // Reset all exclude zero filters
+        excludeZeroFilters = {
+          sales: false,
+          purchase: false,
+          product: false,
+        };
+
+        // Uncheck all checkboxes and update UI
+        const excludeCheckboxes = document.querySelectorAll(
+          ".data-toggle-checkbox"
+        );
+        excludeCheckboxes.forEach((checkbox) => {
+          checkbox.checked = false;
+          updateExcludeZeroUI(checkbox.dataset.type, false);
+        });
+
+        // Hide the active filter indicator
+        document
+          .getElementById("active-exclude-filter")
+          .classList.add("hidden");
+
+        // Refresh data
+        refreshDataWithFilters();
+      }
     </script>
   </body>
 </html>
