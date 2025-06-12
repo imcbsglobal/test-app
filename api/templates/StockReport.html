@@ -587,8 +587,8 @@
       };
 
       // API Base URL - adjust this to your actual API endpoint
-      //const API_BASE_URL = "http://127.0.0.1:8000/api";
-      const API_BASE_URL = "https://omega.imcbs.com";
+      const API_BASE_URL = "http://127.0.0.1:8000/api";
+      //const API_BASE_URL = "https://omega.imcbs.com";
 
       // Authentication utilities
       function getAuthToken() {
@@ -819,8 +819,14 @@
           let url = `${API_BASE_URL}/products/`;
           const params = new URLSearchParams();
 
+          console.log("Building URL with filters:", currentFilters); // ✅ Add this debug line
+
           if (currentFilters.stockCategory) {
             params.append("stockCategory", currentFilters.stockCategory);
+          }
+          if (currentFilters.product) {
+            params.append("product", currentFilters.product);
+            console.log("Added product parameter:", currentFilters.product); // ✅ Add this debug line
           }
           if (currentFilters.brand) {
             params.append("brand", currentFilters.brand);
@@ -832,6 +838,8 @@
           if (params.toString()) {
             url += "?" + params.toString();
           }
+
+          console.log("Final API URL:", url); // ✅ Add this debug line
 
           const response = await authenticatedFetch(url);
           const data = await response.json();
@@ -1113,6 +1121,7 @@
       }
 
       function selectFilter(type, value) {
+        console.log("selectFilter called with:", type, value); // ✅ Add this debug line
         if (type === "category") {
           currentFilters.stockCategory = value;
         } else if (type === "product") {
@@ -1120,6 +1129,8 @@
         } else if (type === "brand") {
           currentFilters.brand = value;
         }
+
+        console.log("Current filters after selection:", currentFilters); // ✅ Add this debug line
 
         updateFilterIndicator();
         populateDropdown(
