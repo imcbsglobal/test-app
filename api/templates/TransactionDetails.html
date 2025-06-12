@@ -307,12 +307,12 @@
       /* Mobile-specific improvements */
       @media (max-width: 640px) {
         .tick-btn {
-          font-size: 12px;
-          padding: 8px 12px;
+          font-size: 10px;
+          padding: 6px 8px;
         }
 
         .tick-btn i {
-          font-size: 11px;
+          font-size: 9px;
         }
       }
 
@@ -379,16 +379,16 @@
             class="absolute left-[10px] mt-2 w-[250px] bg-white border rounded shadow-lg hidden z-50"
           >
             <a
-              href="{% url 'stock' %}"
-              class="flex items-center gap-3 px-4 py-4 hover:bg-gray-100 text-black {% if request.resolver_match.url_name == 'stock' %}text-red-500{% endif %}"
+              href="#"
+              class="flex items-center gap-3 px-4 py-4 hover:bg-gray-100 text-black text-red-500"
             >
               <i class="fa-solid fa-box-open text-red-500"></i>
               Stock Report
             </a>
 
             <a
-              href="{% url 'transaction' %}"
-              class="flex items-center gap-3 px-4 py-4 hover:bg-gray-100 text-black {% if request.resolver_match.url_name == 'transaction' %}text-red-500{% endif %}"
+              href="#"
+              class="flex items-center gap-3 px-4 py-4 hover:bg-gray-100 text-black"
             >
               <i class="fa-solid fa-indian-rupee-sign text-red-500"></i>
               Transaction Details
@@ -561,70 +561,67 @@
 
     <!-- Date Range Selector -->
     <div class="p-3 bg-white md:mx-20 mx-2">
-      <div
-        class="flex flex-col md:flex-row md:items-center md:justify-between md:space-x-3 space-y-3 md:space-y-0"
-      >
+      <!-- Date inputs and search button in one row for mobile -->
+      <div class="flex items-center space-x-2 mb-3">
         <!-- From Date -->
-        <div class="relative flex-1">
+        <div class="flex-1">
           <div
-            class="border border-red-300 rounded-full px-4 py-2 flex items-center"
+            class="border border-red-300 rounded-full px-3 py-2 flex items-center"
           >
             <input
               type="text"
               id="from-date"
               placeholder="From Date"
-              class="date-picker-input w-full bg-transparent focus:outline-none"
+              class="date-picker-input w-full bg-transparent focus:outline-none text-sm"
               readonly
             />
-            <i class="fas fa-calendar ml-auto text-gray-400"></i>
+            <i class="fas fa-calendar ml-auto text-gray-400 text-sm"></i>
           </div>
         </div>
 
         <!-- To Date -->
-        <div class="relative flex-1">
+        <div class="flex-1">
           <div
-            class="border border-red-300 rounded-full px-4 py-2 flex items-center"
+            class="border border-red-300 rounded-full px-3 py-2 flex items-center"
           >
             <input
               type="text"
               id="to-date"
               placeholder="To Date"
-              class="date-picker-input w-full bg-transparent focus:outline-none"
+              class="date-picker-input w-full bg-transparent focus:outline-none text-sm"
               readonly
             />
-            <i class="fas fa-calendar ml-auto text-gray-400"></i>
+            <i class="fas fa-calendar ml-auto text-gray-400 text-sm"></i>
           </div>
         </div>
 
         <!-- Search Icon Button -->
-        <div class="flex justify-center md:justify-start">
-          <div
-            class="bg-red-500 hover:bg-red-600 transition-colors p-3 rounded-full cursor-pointer"
-            id="search-button"
-          >
-            <i class="fas fa-search text-white text-lg"></i>
-          </div>
-        </div>
-
-        <!-- Search Input -->
-        <div class="relative flex-1">
-          <input
-            type="text"
-            placeholder="Search products.."
-            class="search-input w-full py-3 pl-4 pr-10 border border-red-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent bg-white/80"
-            id="search-input"
-          />
-          <button
-            class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 transition-colors"
-            id="text-search-button"
-          >
-            <i class="fas fa-search text-lg"></i>
-          </button>
+        <div
+          class="bg-red-500 hover:bg-red-600 transition-colors p-2.5 rounded-full cursor-pointer"
+          id="search-button"
+        >
+          <i class="fas fa-search text-white text-sm"></i>
         </div>
       </div>
 
+      <!-- Search Input in separate row -->
+      <div class="relative">
+        <input
+          type="text"
+          placeholder="Search products.."
+          class="search-input w-full py-3 pl-4 pr-10 border border-red-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent bg-white/80"
+          id="search-input"
+        />
+        <button
+          class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 transition-colors"
+          id="text-search-button"
+        >
+          <i class="fas fa-search text-lg"></i>
+        </button>
+      </div>
+
       <!-- Tick Filter Buttons -->
-      <div class="bg-white rounded-lg shadow-sm p-3 md:p-4 mb-4">
+      <div class="bg-white rounded-lg shadow-sm p-3 md:p-4 mb-4 mt-4">
         <div class="flex flex-col space-y-3">
           <!-- Title -->
           <div class="flex items-center justify-between">
@@ -641,8 +638,8 @@
             Tap to show only non-zero quantities
           </p>
 
-          <!-- Filter buttons -->
-          <div class="flex flex-col sm:flex-row gap-2 sm:gap-3">
+          <!-- Filter buttons - always in one row now -->
+          <div class="flex gap-1.5">
             <!-- Sales -->
             <label
               class="flex-1 flex items-center justify-center cursor-pointer"
@@ -653,10 +650,10 @@
                 data-type="sales"
               />
               <span
-                class="w-full text-center px-3 py-2 text-sm rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-red-50 hover:border-red-300 transition-all duration-200 tick-btn"
+                class="w-full text-center px-2 py-2 text-xs rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-red-50 hover:border-red-300 transition-all duration-200 tick-btn"
               >
-                <i class="fas fa-chart-line mr-1 md:mr-2"></i>
-                <span class="hidden sm:inline">Sales </span>Qty
+                <i class="fas fa-chart-line mr-1"></i>
+                Sales
               </span>
             </label>
 
@@ -670,10 +667,10 @@
                 data-type="purchase"
               />
               <span
-                class="w-full text-center px-3 py-2 text-sm rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-blue-50 hover:border-blue-300 transition-all duration-200 tick-btn"
+                class="w-full text-center px-2 py-2 text-xs rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-blue-50 hover:border-blue-300 transition-all duration-200 tick-btn"
               >
-                <i class="fas fa-shopping-cart mr-1 md:mr-2"></i>
-                <span class="hidden sm:inline">Purchase </span>Qty
+                <i class="fas fa-shopping-cart mr-1"></i>
+                Purchase
               </span>
             </label>
 
@@ -687,10 +684,10 @@
                 data-type="product"
               />
               <span
-                class="w-full text-center px-3 py-2 text-sm rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-green-50 hover:border-green-300 transition-all duration-200 tick-btn"
+                class="w-full text-center px-2 py-2 text-xs rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-green-50 hover:border-green-300 transition-all duration-200 tick-btn"
               >
-                <i class="fas fa-industry mr-1 md:mr-2"></i>
-                <span class="hidden sm:inline">Production </span>Qty
+                <i class="fas fa-industry mr-1"></i>
+                Production
               </span>
             </label>
           </div>
@@ -735,7 +732,25 @@
         </div>
 
         <div id="transactions-table-body">
-          <!-- Transaction data will be loaded here -->
+          <!-- Sample data for demonstration -->
+          <div class="table-row grid grid-cols-4 hover:bg-gray-50">
+            <div class="table-cell px-1 text-left">Product A</div>
+            <div class="table-cell px-1">150</div>
+            <div class="table-cell px-1">200</div>
+            <div class="table-cell px-1">100</div>
+          </div>
+          <div class="table-row grid grid-cols-4 hover:bg-gray-50">
+            <div class="table-cell px-1 text-left">Product B</div>
+            <div class="table-cell px-1">75</div>
+            <div class="table-cell px-1">120</div>
+            <div class="table-cell px-1">80</div>
+          </div>
+          <div class="table-row grid grid-cols-4 hover:bg-gray-50">
+            <div class="table-cell px-1 text-left">Product C</div>
+            <div class="table-cell px-1">300</div>
+            <div class="table-cell px-1">250</div>
+            <div class="table-cell px-1">200</div>
+          </div>
         </div>
       </div>
       <!-- Pagination Controls -->
@@ -760,7 +775,7 @@
 
           <!-- Pagination info -->
           <div class="text-sm text-center sm:text-left" id="pagination-info">
-            <!-- Pagination info will be inserted here -->
+            Showing 1-3 of 3 results
           </div>
 
           <!-- Pagination buttons -->
@@ -768,7 +783,9 @@
             class="flex justify-center sm:justify-end"
             id="pagination-container"
           >
-            <!-- Pagination buttons will be inserted here -->
+            <button class="pagination-btn" disabled>Previous</button>
+            <button class="pagination-btn active">1</button>
+            <button class="pagination-btn" disabled>Next</button>
           </div>
         </div>
       </div>
@@ -821,8 +838,8 @@
         product: false,
       };
       // API Base URL
-      //const API_BASE_URL = "http://127.0.0.1:8000/api";
-      const API_BASE_URL = "https://omega.imcbs.com";
+      const API_BASE_URL = "http://127.0.0.1:8000/api";
+      //const API_BASE_URL = "https://omega.imcbs.com";
 
       // Authentication utilities
       function getAuthToken() {
