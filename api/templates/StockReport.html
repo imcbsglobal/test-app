@@ -1,458 +1,579 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Stock Report</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-      rel="stylesheet"
-    />
-    <style>
-      @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
 
-      body {
-        font-family: "Inter", sans-serif;
-        background-color: white;
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stock Report</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
+
+    body {
+      font-family: "Inter", sans-serif;
+      background-color: white;
+    }
+
+    .search-input {
+      padding: 8px 12px;
+      border-radius: 25px;
+      border: 1px solid #ef4444;
+      width: 100%;
+      font-size: 16px;
+      color: #666;
+    }
+
+    .search-button {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background-color: #ef4444;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 10px rgba(255, 107, 107, 0.3);
+    }
+
+    .table-container {
+      border-radius: 15px;
+      overflow: hidden;
+      border: 1px solid #ffe0e0;
+    }
+
+    .table-header {
+      background-color: #ffefef;
+      font-weight: 600;
+    }
+
+    .table-row {
+      border-bottom: 1px solid #ffe0e0;
+      font-size: small;
+    }
+
+    .table-cell {
+      padding: 12px 15px;
+      text-align: center;
+    }
+
+    .table-cell:first-child {
+      text-align: left;
+    }
+
+    .table-cell:last-child {
+      text-align: right;
+      /* Last column - right aligned */
+    }
+
+    .highlight-row {
+      background-color: #fff8e1;
+    }
+
+    .highlight-text {
+      color: #ff3a3a;
+      font-weight: 500;
+    }
+
+    .dropdown-content {
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #ef4444;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
       }
 
-      .search-input {
-        padding: 8px 12px;
-        border-radius: 25px;
-        border: 1px solid #ef4444;
-        width: 100%;
-        font-size: 16px;
-        color: #666;
+      100% {
+        transform: rotate(360deg);
       }
+    }
 
-      .search-button {
-        width: 50px;
-        height: 50px;
-        border-radius: 50%;
-        background-color: #ef4444;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 2px 10px rgba(255, 107, 107, 0.3);
-      }
+    .error-message {
+      background-color: #fee2e2;
+      border: 1px solid #fecaca;
+      color: #dc2626;
+      padding: 12px;
+      border-radius: 8px;
+      margin: 16px;
+      text-align: center;
+    }
 
-      .table-container {
-        border-radius: 15px;
-        overflow: hidden;
-        border: 1px solid #ffe0e0;
-      }
+    .logo-container {
+      width: 80px;
+      height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(10px);
+    }
 
-      .table-header {
-        background-color: #ffefef;
-        font-weight: 600;
-      }
+    .stats-card {
+      background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+      width: 200px;
+      height: 80px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid #e2e8f0;
+      transition: all 0.3s ease;
+    }
 
-      .table-row {
-        border-bottom: 1px solid #ffe0e0;
-        font-size: small;
-      }
+    .stats-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    }
 
-      .table-cell {
-        padding: 12px 15px;
-        text-align: center;
-      }
+    .dashboard-card {
+      background: linear-gradient(135deg, #ef4444 0%, #ef4444 100%);
+      position: relative;
+      overflow: hidden;
+    }
 
-      .table-cell:first-child {
-        text-align: left;
-      }
-
-      .table-cell:last-child {
-        text-align: right; /* Last column - right aligned */
-      }
-
-      .highlight-row {
-        background-color: #fff8e1;
-      }
-
-      .highlight-text {
-        color: #ff3a3a;
-        font-weight: 500;
-      }
-
-      .dropdown-content {
-        max-height: 200px;
-        overflow-y: auto;
-      }
-
-      .loading {
-        display: inline-block;
-        width: 20px;
-        height: 20px;
-        border: 3px solid #f3f3f3;
-        border-top: 3px solid #ef4444;
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-      }
-
-      @keyframes spin {
-        0% {
-          transform: rotate(0deg);
-        }
-
-        100% {
-          transform: rotate(360deg);
-        }
-      }
-
-      .error-message {
-        background-color: #fee2e2;
-        border: 1px solid #fecaca;
-        color: #dc2626;
-        padding: 12px;
-        border-radius: 8px;
-        margin: 16px;
-        text-align: center;
-      }
-
-      .logo-container {
-        width: 80px;
-        height: 80px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        backdrop-filter: blur(10px);
-      }
-
-      .stats-card {
-        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-        width: 200px;
-        height: 80px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        border: 1px solid #e2e8f0;
-        transition: all 0.3s ease;
-      }
-
-      .stats-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-      }
-
-      .dashboard-card {
-        background: linear-gradient(135deg, #ef4444 0%, #ef4444 100%);
-        position: relative;
-        overflow: hidden;
-      }
-
-      .dashboard-card::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        right: 0;
-        width: 100px;
-        height: 100px;
-        background: radial-gradient(
-          circle,
+    .dashboard-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 100px;
+      height: 100px;
+      background: radial-gradient(circle,
           rgba(255, 255, 255, 0.1) 0%,
-          transparent 70%
-        );
-        border-radius: 50%;
+          transparent 70%);
+      border-radius: 50%;
+    }
+
+    /* Pagination Styles */
+    .pagination-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+
+    .pagination-btn {
+      padding: 8px 12px;
+      border: 1px solid #e2e8f0;
+      background-color: white;
+      color: #4a5568;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+      min-width: 40px;
+      text-align: center;
+    }
+
+    .pagination-btn:hover:not(:disabled) {
+      background-color: #f7fafc;
+      border-color: #cbd5e0;
+    }
+
+    .pagination-btn.active {
+      background-color: #ef4444;
+      color: white;
+      border-color: #ef4444;
+    }
+
+    .pagination-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .pagination-info {
+      font-size: 14px;
+      color: #718096;
+      margin: 0 16px;
+    }
+
+    .page-size-selector {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      color: #4a5568;
+    }
+
+    .page-size-select {
+      padding: 4px 8px;
+      border: 1px solid #e2e8f0;
+      border-radius: 4px;
+      background-color: white;
+    }
+
+    #logout-btn:active {
+      color: white !important;
+    }
+
+    .filter-selected {
+      color: #ef4444;
+      /* Red color matching your theme */
+    }
+
+    /* Add these styles to your existing style section */
+    .dropdown-search-container {
+      padding: 8px;
+      position: sticky;
+      top: 0;
+      background: white;
+      z-index: 10;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .dropdown-search-input {
+      width: 100%;
+      padding: 6px 10px;
+      border: 1px solid #e2e8f0;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+
+    .dropdown-search-input:focus {
+      outline: none;
+      border-color: #ef4444;
+    }
+
+    .dropdown-search-icon {
+      position: absolute;
+      right: 16px;
+      top: 16px;
+      color: #718096;
+      font-size: 12px;
+    }
+
+    .dropdown-content {
+      max-height: 200px;
+      overflow-y: auto;
+      padding-top: 0;
+    }
+
+    .quantity-filter-container {
+      position: relative;
+      z-index: 1;
+    }
+
+    .quantity-input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid #ef4444;
+      border-radius: 12px;
+      font-size: 16px;
+      color: #374151;
+      background-color: white;
+      transition: all 0.3s ease;
+      margin-bottom: 16px;
+    }
+
+    .quantity-input:focus {
+      outline: none;
+      border-color: #ef4444;
+      box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+    }
+
+    .quantity-input::placeholder {
+      color: #9ca3af;
+    }
+
+    .quantity-filter-buttons {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .quantity-filter-btn {
+      flex: 1;
+      padding: 12px 20px;
+      border: 2px solid #ef4444;
+      background-color: white;
+      color: #6b7280;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width:80px;
+    }
+
+    .quantity-filter-btn:hover {
+      border-color: #ef4444;
+      color: #ef4444;
+      background-color: #fef2f2;
+      transform: translateY(-1px);
+    }
+
+    .quantity-filter-btn.active {
+      background-color: #ef4444;
+      border-color: #ef4444;
+      color: white;
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+    }
+
+    .quantity-filter-btn.active:hover {
+      background-color: #dc2626;
+      border-color: #dc2626;
+      color: white;
+    }
+
+    .filter-divider {
+      height: 1px;
+      background: linear-gradient(to right, transparent, #e2e8f0, transparent);
+      margin: 20px 0;
+    }
+
+    .apply-btn {
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      color: white;
+      padding: 10px 24px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 4px rgba(239, 68, 68, 0.2);
+    }
+
+    .apply-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+    }
+
+    .apply-btn:active {
+      transform: translateY(0);
+    }
+
+    .filter-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 16px;
+      color: #374151;
+    }
+
+    .filter-header i {
+      color: #ef4444;
+      margin-right: 8px;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1;
       }
 
-      /* Pagination Styles */
-      .pagination-container {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 8px;
-        margin-top: 20px;
-        flex-wrap: wrap;
+      50% {
+        opacity: 0.8;
       }
+    }
 
-      .pagination-btn {
-        padding: 8px 12px;
-        border: 1px solid #e2e8f0;
-        background-color: white;
-        color: #4a5568;
-        border-radius: 6px;
-        cursor: pointer;
-        transition: all 0.2s;
-        min-width: 40px;
-        text-align: center;
-      }
+    .quantity-filter-btn.active {
+      animation: pulse 2s infinite;
+    }
 
-      .pagination-btn:hover:not(:disabled) {
-        background-color: #f7fafc;
-        border-color: #cbd5e0;
-      }
+    .quantity-input-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .quantity-input {
+  width: 120px;
+  padding: 8px 12px;
+  border: 1px solid #ef4444;
+  border-radius: 6px;
+  font-size: 14px;
+  margin-right: 8px;
+}
 
-      .pagination-btn.active {
-        background-color: #ef4444;
-        color: white;
-        border-color: #ef4444;
-      }
+.quantity-input:focus {
+  outline: none;
+  border-color: #ef4444;
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2);
+}
 
-      .pagination-btn:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-      }
+#clear-above-filter, 
+#apply-above-filter,
+#clear-below-filter,
+#apply-below-filter,
+#clear-all-filters-btn {
+  padding: 6px 12px;
+  border-radius: 4px;
+  transition: all 0.2s;
+  border: 1px solid #ef4444;
+  background-color: white;
+}
 
-      .pagination-info {
-        font-size: 14px;
-        color: #718096;
-        margin: 0 16px;
-      }
+#clear-above-filter:hover, 
+#apply-above-filter:hover,
+#clear-below-filter:hover,
+#apply-below-filter:hover,
+#clear-all-filters-btn:hover {
+  background-color: #fef2f2;
+}
+  </style>
+</head>
 
-      .page-size-selector {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 14px;
-        color: #4a5568;
-      }
-
-      .page-size-select {
-        padding: 4px 8px;
-        border: 1px solid #e2e8f0;
-        border-radius: 4px;
-        background-color: white;
-      }
-
-      #logout-btn:active {
-        color: white !important;
-      }
-
-      .filter-selected {
-        color: #ef4444;
-        /* Red color matching your theme */
-      }
-
-      /* Add these styles to your existing style section */
-      .dropdown-search-container {
-        padding: 8px;
-        position: sticky;
-        top: 0;
-        background: white;
-        z-index: 10;
-        border-bottom: 1px solid #e2e8f0;
-      }
-
-      .dropdown-search-input {
-        width: 100%;
-        padding: 6px 10px;
-        border: 1px solid #e2e8f0;
-        border-radius: 4px;
-        font-size: 12px;
-      }
-
-      .dropdown-search-input:focus {
-        outline: none;
-        border-color: #ef4444;
-      }
-
-      .dropdown-search-icon {
-        position: absolute;
-        right: 16px;
-        top: 16px;
-        color: #718096;
-        font-size: 12px;
-      }
-
-      .dropdown-content {
-        max-height: 200px;
-        overflow-y: auto;
-        padding-top: 0;
-      }
-    </style>
-  </head>
-
-  <body>
-    <!-- Header -->
-    <header class="bg-red-500 text-white p-2">
-      <!-- Main header row -->
-      <div class="flex items-center justify-between">
-        <!-- Hamburger Icon with Dropdown -->
-        <div class="relative">
-          <button id="menuButton" class="text-xl p-2 focus:outline-none">
-            <i class="fas fa-bars text-white"></i>
-          </button>
-
-          <!-- Dropdown Menu -->
-          <div
-            id="dropdownMenu"
-            class="absolute left-[10px] mt-2 w-[250px] bg-white border rounded shadow-lg hidden z-50"
-          >
-            <a
-              href="{% url 'stock' %}"
-              class="flex items-center gap-3 px-4 py-4 hover:bg-gray-100 text-black {% if request.resolver_match.url_name == 'stock' %}text-red-500{% endif %}"
-            >
-              <i class="fa-solid fa-box-open text-red-500"></i>
-              Stock Report
-            </a>
-
-            <a
-              href="{% url 'transaction' %}"
-              class="flex items-center gap-3 px-4 py-4 hover:bg-gray-100 text-black {% if request.resolver_match.url_name == 'transaction' %}text-red-500{% endif %}"
-            >
-              <i class="fa-solid fa-indian-rupee-sign text-red-500"></i>
-              Transaction Details
-            </a>
-          </div>
-        </div>
-
-        <!-- Logo Container -->
-        <div class="logo-container">
-          <img src="{% static 'images\omegawhite.png' %}" alt="" />
-        </div>
-
-        <!-- Right side container -->
-        <div class="flex flex-col gap-4 mt-3 items-end space-y-2 md:pr-18 pr-3">
-          <!-- Buttons row -->
-          <div class="flex items-center space-x-6 md:space-x-10">
-            <a href="#" class="relative" id="filter-button">
-              <i class="fas fa-filter text-xl"></i>
-              <span
-                id="filter-dot"
-                class="hidden absolute -top-1 -right-1 w-2 h-2 bg-yellow-400 rounded-full"
-              ></span>
-            </a>
-            <button id="logout-btn" class="text-white">
-              <i class="fas fa-sign-out-alt text-xl"></i>
-            </button>
-          </div>
-
-          <!-- Username row -->
-          <div class="flex items-center space-x-2 text-white">
-            <i class="fas fa-user text-sm"></i>
-            <span id="username-display" class="text-sm font-medium">
-              Loading...
-            </span>
-          </div>
-        </div>
-      </div>
-    </header>
-
-    <!-- Authentication Error Message -->
-    <div id="auth-error" class="hidden error-message">
-      <i class="fas fa-exclamation-triangle mr-2"></i>
-      Your session has expired. Please
-      <a href="/login/" class="underline font-medium">login again</a>.
-    </div>
-
-    <!-- Filter Panel -->
-    <div
-      id="filter-panel"
-      class="hidden fixed top-16 right-5 shadow-xl bg-white rounded-lg z-10 w-64 border border-gray-200"
-    >
-      <div
-        class="flex flex-col gap-2 justify-start item-start p-3 border-b border-gray-200 text-gray-700"
-      >
-        Filter By:
-        <div
-          id="selected-filters"
-          class="flex flex-col gap-5 text-red-500 text-base ml-2 text-[16px] justify-start item-start"
-        ></div>
-      </div>
-      <ul>
-        <li
-          class="px-4 py-3 cursor-pointer hover:bg-gray-50"
-          id="all-products-filter"
-        >
-          <span>All Products</span>
-        </li>
-        <li
-          class="px-4 py-3 cursor-pointer hover:bg-gray-50 relative"
-          id="stock-category-filter"
-        >
-          <div class="flex items-center justify-between">
-            <span>Stock Category</span>
-            <i
-              class="fas fa-chevron-down text-xs text-gray-400"
-              id="category-arrow"
-            ></i>
-          </div>
-          <div class="hidden mt-2 dropdown-content" id="category-dropdown">
-            <div class="max-h-32 overflow-y-auto bg-gray-50 rounded">
-              <div class="p-2 text-center text-gray-500">
-                <div class="loading"></div>
-              </div>
-            </div>
-          </div>
-        </li>
-        <li
-          class="px-4 py-3 cursor-pointer hover:bg-gray-50 relative"
-          id="product-filter"
-        >
-          <div class="flex items-center justify-between">
-            <span>Product</span>
-            <i
-              class="fas fa-chevron-down text-xs text-gray-400"
-              id="product-arrow"
-            ></i>
-          </div>
-          <div class="hidden mt-2 dropdown-content" id="product-dropdown">
-            <div class="max-h-32 overflow-y-auto bg-gray-50 rounded">
-              <div class="p-2 text-center text-gray-500">
-                <div class="loading"></div>
-              </div>
-            </div>
-          </div>
-        </li>
-        <li
-          class="px-4 py-3 cursor-pointer hover:bg-gray-50 relative"
-          id="brand-filter"
-        >
-          <div class="flex items-center justify-between">
-            <span>Brand</span>
-            <i
-              class="fas fa-chevron-down text-xs text-gray-400"
-              id="brand-arrow"
-            ></i>
-          </div>
-          <div class="hidden mt-2 dropdown-content" id="brand-dropdown">
-            <div class="max-h-32 overflow-y-auto bg-gray-50 rounded">
-              <div class="p-2 text-center text-gray-500">
-                <div class="loading"></div>
-              </div>
-            </div>
-          </div>
-        </li>
-      </ul>
-      <div class="p-3 border-t border-gray-200 flex justify-end">
-        <button class="text-red-500 font-medium text-sm" id="apply-filters-btn">
-          Apply Filters
+<body>
+  <!-- Header -->
+  <header class="bg-red-500 text-white p-2">
+    <!-- Main header row -->
+    <div class="flex items-center justify-between">
+      <!-- Hamburger Icon with Dropdown -->
+      <div class="relative">
+        <button id="menuButton" class="text-xl p-2 focus:outline-none">
+          <i class="fas fa-bars text-white"></i>
         </button>
+
+        <!-- Dropdown Menu -->
+        <div id="dropdownMenu"
+          class="absolute left-[10px] mt-2 w-[250px] bg-white border rounded shadow-lg hidden z-50">
+          <a href="{% url 'stock' %}"
+            class="flex items-center gap-3 px-4 py-4 hover:bg-gray-100 text-black {% if request.resolver_match.url_name == 'stock' %}text-red-500{% endif %}">
+            <i class="fa-solid fa-box-open text-red-500"></i>
+            Stock Report
+          </a>
+
+          <a href="{% url 'transaction' %}"
+            class="flex items-center gap-3 px-4 py-4 hover:bg-gray-100 text-black {% if request.resolver_match.url_name == 'transaction' %}text-red-500{% endif %}">
+            <i class="fa-solid fa-indian-rupee-sign text-red-500"></i>
+            Transaction Details
+          </a>
+        </div>
+      </div>
+
+      <!-- Logo Container -->
+      <div class="logo-container">
+        <img src="{% static 'images\omegawhite.png' %}" alt="" />
+      </div>
+
+      <!-- Right side container -->
+      <div class="flex flex-col gap-4 mt-3 items-end space-y-2 md:pr-18 pr-3">
+        <!-- Buttons row -->
+        <div class="flex items-center space-x-6 md:space-x-10">
+          <a href="#" class="relative" id="filter-button">
+            <i class="fas fa-filter text-xl"></i>
+            <span id="filter-dot" class="hidden absolute -top-1 -right-1 w-2 h-2 bg-yellow-400 rounded-full"></span>
+          </a>
+          <button id="logout-btn" class="text-white">
+            <i class="fas fa-sign-out-alt text-xl"></i>
+          </button>
+        </div>
+
+        <!-- Username row -->
+        <div class="flex items-center space-x-2 text-white">
+          <i class="fas fa-user text-sm"></i>
+          <span id="username-display" class="text-sm font-medium">
+            Loading...
+          </span>
+        </div>
       </div>
     </div>
+  </header>
 
-    <div
-      class="dashboard-card rounded-2xl p-6 mb-6 text-white mt-5 md:mx-20 mx-3"
-    >
-      <div class="flex items-center justify-center mb-4">
-        <h2 class="text-2xl font-bold text-center">Stock Report</h2>
-        <!-- <p class="text-white/80 text-sm">Inventory Management System</p> -->
+  <!-- Authentication Error Message -->
+  <div id="auth-error" class="hidden error-message">
+    <i class="fas fa-exclamation-triangle mr-2"></i>
+    Your session has expired. Please
+    <a href="/login/" class="underline font-medium">login again</a>.
+  </div>
+
+  <!-- Filter Panel -->
+  <div id="filter-panel"
+    class="hidden fixed top-16 right-5 shadow-xl bg-white rounded-lg z-10 w-64 border border-gray-200">
+    <div class="flex flex-col gap-2 justify-start item-start p-3 border-b border-gray-200 text-gray-700">
+      Filter By:
+      <div id="selected-filters"
+        class="flex flex-col gap-5 text-red-500 text-base ml-2 text-[16px] justify-start item-start"></div>
+    </div>
+    <ul>
+      <li class="px-4 py-3 cursor-pointer hover:bg-gray-50" id="all-products-filter">
+        <span>All Products</span>
+      </li>
+      <li class="px-4 py-3 cursor-pointer hover:bg-gray-50 relative" id="stock-category-filter">
+        <div class="flex items-center justify-between">
+          <span>Stock Category</span>
+          <i class="fas fa-chevron-down text-xs text-gray-400" id="category-arrow"></i>
+        </div>
+        <div class="hidden mt-2 dropdown-content" id="category-dropdown">
+          <div class="max-h-32 overflow-y-auto bg-gray-50 rounded">
+            <div class="p-2 text-center text-gray-500">
+              <div class="loading"></div>
+            </div>
+          </div>
+        </div>
+      </li>
+      <li class="px-4 py-3 cursor-pointer hover:bg-gray-50 relative" id="product-filter">
+        <div class="flex items-center justify-between">
+          <span>Product</span>
+          <i class="fas fa-chevron-down text-xs text-gray-400" id="product-arrow"></i>
+        </div>
+        <div class="hidden mt-2 dropdown-content" id="product-dropdown">
+          <div class="max-h-32 overflow-y-auto bg-gray-50 rounded">
+            <div class="p-2 text-center text-gray-500">
+              <div class="loading"></div>
+            </div>
+          </div>
+        </div>
+      </li>
+      <li class="px-4 py-3 cursor-pointer hover:bg-gray-50 relative" id="brand-filter">
+        <div class="flex items-center justify-between">
+          <span>Brand</span>
+          <i class="fas fa-chevron-down text-xs text-gray-400" id="brand-arrow"></i>
+        </div>
+        <div class="hidden mt-2 dropdown-content" id="brand-dropdown">
+          <div class="max-h-32 overflow-y-auto bg-gray-50 rounded">
+            <div class="p-2 text-center text-gray-500">
+              <div class="loading"></div>
+            </div>
+          </div>
+        </div>
+      </li>
+    </ul>
+    <div class="p-3 border-t border-gray-200 flex justify-end">
+      <button class="text-red-500 font-medium text-sm" id="apply-filters-btn">
+        Apply Filters
+      </button>
+    </div>
+  </div>
+  <!-- category stats -->
+  <div class="dashboard-card rounded-2xl p-6 mb-6 text-white mt-5 md:mx-20 mx-3">
+    <div class="flex items-center justify-center mb-4">
+      <h2 class="text-2xl font-bold text-center">Stock Report</h2>
+      <!-- <p class="text-white/80 text-sm">Inventory Management System</p> -->
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="flex items-center justify-center gap-4 stats-grid">
+      <div class="stats-card sm:p-1 p-3 rounded-xl text-center">
+        <div class="text-sm md:text-lg font-bold text-gray-800" id="total-items">
+          0
+        </div>
+        <div class="text-xs text-gray-600">Total Products</div>
       </div>
-
-      <!-- Quick Stats -->
-      <div class="flex items-center justify-center gap-4 stats-grid">
-        <div class="stats-card sm:p-1 p-3 rounded-xl text-center">
-          <div
-            class="text-sm md:text-lg font-bold text-gray-800"
-            id="total-items"
-          >
-            0
-          </div>
-          <div class="text-xs text-gray-600">Total Products</div>
+      <div class="stats-card sm:p-1 p-3 rounded-xl text-center">
+        <div class="text-sm md:text-lg font-bold text-green-600" id="total-quantity">
+          0
         </div>
-        <div class="stats-card sm:p-1 p-3 rounded-xl text-center">
-          <div
-            class="text-sm md:text-lg font-bold text-green-600"
-            id="total-quantity"
-          >
-            0
-          </div>
-          <div class="text-xs text-gray-600">Total Quantity</div>
-        </div>
-        <!-- <div class="stats-card rounded-xl p-2 md:p-4 text-center">
+        <div class="text-xs text-gray-600">Total Quantity</div>
+      </div>
+      <!-- <div class="stats-card rounded-xl p-2 md:p-4 text-center">
           <div
             class="text-sm md:text-lg font-bold text-blue-600"
             id="total-value"
@@ -461,100 +582,143 @@
           </div>
           <div class="text-xs text-gray-600">Total Cost</div>
         </div> -->
-        <!-- <div class="stats-card rounded-xl p-4 text-center">
+      <!-- <div class="stats-card rounded-xl p-4 text-center">
           <div class="text-2xl font-bold text-orange-600">1</div>
           <div class="text-sm text-gray-600">Low Stock</div>
         </div> -->
+    </div>
+  </div>
+
+  <!-- above below -->
+  <!-- Quantity Filter Section -->
+<div class="rounded-2xl p-6 mb-6 text-black mt-5 md:mx-20 mx-3">
+  <div class="quantity-filter-container">
+    <div class="text-sm font-medium text-gray-700 mb-2  md:ml-[120px]">
+      <i class="fas fa-calculator mr-2"></i>
+      Filter by Quantity
+    </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-1 md:ml-[120px]">
+            <!-- Above Quantity Filter -->
+            <div class="mb-1">
+                <div class="flex items-center mb-2">
+                    <label for="above-quantity-input" class="text-sm font-medium text-gray-700 mr-2">
+                        <!-- <i class="fas fa-arrow-up mr-1 text-red-500"></i> -->
+                        Above:
+                    </label>
+                    <input type="number" id="above-quantity-input" class="quantity-input" placeholder="Enter value" min="0" step="1" />
+                
+                    
+                    <button class="text-red-500 font-medium text-sm  mr-2 mt-[-12px]" id="apply-above-filter">
+                        Apply
+                    </button>
+                    <button class="text-red-500 font-medium text-sm h mr-2 mt-[-12px]" id="clear-above-filter">
+                        Clear
+                    </button>
+                </div>
+            </div>
+
+            <!-- Below Quantity Filter -->
+            <div class="mb-6 ">
+                <div class="flex items-center mb-2">
+                    <label for="below-quantity-input" class="text-sm font-medium text-gray-700 mr-2">
+                        <!-- <i class="fas fa-arrow-down mr-1 text-red-500"></i> -->
+                        Below:
+                    </label>
+                    <input type="number" id="below-quantity-input" class="quantity-input" placeholder="Enter value" min="0" step="1" />
+                
+                    
+                    <button class="text-red-500 font-medium text-sm  mr-2 mt-[-12px]" id="apply-below-filter">
+                        Apply
+                    </button>
+                    <button class="text-red-500 font-medium text-sm  mt-[-12px]" id="clear-below-filter">
+                        Clear
+                    </button>
+                </div>
+                
+            </div>
+        </div>
+
+  
+</div>
+
+  
+  <!-- Search -->
+  <div class="p-4 bg-white flex items-center justify-between md:mx-20 mx-2">
+    <div class="relative flex-1 mr-3">
+      <div class="relative">
+        <input type="text" placeholder="Search products..."
+          class="w-full py-2 px-4 border border-red-300 rounded-full focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+          id="search-input" />
+        <button class="absolute right-4 top-2 text-gray-400" id="search-btn">
+          <i class="fas fa-search"></i>
+        </button>
       </div>
     </div>
 
-    <!-- Search -->
-    <div class="p-4 bg-white flex items-center justify-between md:mx-20 mx-2">
-      <div class="relative flex-1 mr-3">
-        <div class="relative">
-          <input
-            type="text"
-            placeholder="Search products..."
-            class="w-full py-2 px-4 border border-red-300 rounded-full focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-            id="search-input"
-          />
-          <button class="absolute right-4 top-2 text-gray-400" id="search-btn">
-            <i class="fas fa-search"></i>
-          </button>
+    <div class="search-button" id="search-button">
+      <i class="fas fa-search text-white text-lg"></i>
+    </div>
+  </div>
+
+  <!-- Loading Indicator -->
+  <div class="px-4 py-8 text-center hidden" id="loading-indicator">
+    <div class="loading mx-auto"></div>
+    <p class="mt-2 text-gray-500">Loading products...</p>
+  </div>
+
+  <!-- Stock Table -->
+  <div class="px-0 md:px-3 pb-6 md:mx-20 mx-2" id="table-container">
+    <div class="table-container">
+      <div class="table-header text-xs md:text-sm grid grid-cols-3">
+        <div class="table-cell text-xs md:text-sm text-center">
+          Product Name
+        </div>
+        <div class="table-cell text-xs md:text-sm text-center">Quantity</div>
+        <div class="table-cell text-xs md:text-sm text-center">Cost</div>
+      </div>
+
+      <div id="products-table-body">
+        <!-- Products will be loaded here -->
+      </div>
+    </div>
+
+    <!-- Pagination Controls -->
+    <div class="bg-white px-4 py-3 border-t border-gray-200 sm:px-6 m-10">
+      <div class="flex flex-col space-y-4 sm:space-y-0 sm:flex-row sm:items-center sm:justify-between">
+        <!-- Page size selector -->
+        <div class="flex items-center space-x-2">
+          <span class="text-sm">Show:</span>
+          <select id="page-size-select" class="border rounded px-2 py-1 text-sm">
+            <option value="10">10</option>
+            <option value="25">25</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+          </select>
+          <span class="text-sm">per page</span>
+        </div>
+
+        <!-- Pagination info -->
+        <div class="text-sm text-center sm:text-left" id="pagination-info">
+          <!-- Pagination info will be inserted here -->
+        </div>
+
+        <!-- Pagination buttons -->
+        <div class="flex justify-center sm:justify-end" id="pagination-container">
+          <!-- Pagination buttons will be inserted here -->
         </div>
       </div>
-
-      <div class="search-button" id="search-button">
-        <i class="fas fa-search text-white text-lg"></i>
-      </div>
     </div>
+  </div>
 
-    <!-- Loading Indicator -->
-    <div class="px-4 py-8 text-center hidden" id="loading-indicator">
-      <div class="loading mx-auto"></div>
-      <p class="mt-2 text-gray-500">Loading products...</p>
-    </div>
+  <!-- No Results Message -->
+  <div class="px-4 py-8 text-center hidden" id="no-results">
+    <i class="fas fa-box-open text-4xl text-gray-300 mb-4"></i>
+    <p class="text-gray-500">No products found matching your criteria.</p>
+  </div>
 
-    <!-- Stock Table -->
-    <div class="px-0 md:px-3 pb-6 md:mx-20 mx-2" id="table-container">
-      <div class="table-container">
-        <div class="table-header text-xs md:text-sm grid grid-cols-3">
-          <div class="table-cell text-xs md:text-sm text-center">
-            Product Name
-          </div>
-          <div class="table-cell text-xs md:text-sm text-center">Quantity</div>
-          <div class="table-cell text-xs md:text-sm text-center">Cost</div>
-        </div>
-
-        <div id="products-table-body">
-          <!-- Products will be loaded here -->
-        </div>
-      </div>
-
-      <!-- Pagination Controls -->
-      <div class="bg-white px-4 py-3 border-t border-gray-200 sm:px-6 m-10">
-        <div
-          class="flex flex-col space-y-4 sm:space-y-0 sm:flex-row sm:items-center sm:justify-between"
-        >
-          <!-- Page size selector -->
-          <div class="flex items-center space-x-2">
-            <span class="text-sm">Show:</span>
-            <select
-              id="page-size-select"
-              class="border rounded px-2 py-1 text-sm"
-            >
-              <option value="10">10</option>
-              <option value="25">25</option>
-              <option value="50">50</option>
-              <option value="100">100</option>
-            </select>
-            <span class="text-sm">per page</span>
-          </div>
-
-          <!-- Pagination info -->
-          <div class="text-sm text-center sm:text-left" id="pagination-info">
-            <!-- Pagination info will be inserted here -->
-          </div>
-
-          <!-- Pagination buttons -->
-          <div
-            class="flex justify-center sm:justify-end"
-            id="pagination-container"
-          >
-            <!-- Pagination buttons will be inserted here -->
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- No Results Message -->
-    <div class="px-4 py-8 text-center hidden" id="no-results">
-      <i class="fas fa-box-open text-4xl text-gray-300 mb-4"></i>
-      <p class="text-gray-500">No products found matching your criteria.</p>
-    </div>
-
-    <!-- Floating Action Button -->
-    <!-- <div class="fixed bottom-6 right-6">
+  <!-- Floating Action Button -->
+  <!-- <div class="fixed bottom-6 right-6">
       <button
         class="w-14 h-14 bg-red-500 rounded-full shadow-lg flex items-center justify-center text-white hover:bg-red-600 transition-colors"
       >
@@ -562,29 +726,33 @@
       </button>
     </div> -->
 
-    <script>
-      // Global variables to store filter data and current filters
-      let stockCategories = [];
-      let products = [];
-      let brands = [];
-      let currentFilters = {
-        stockCategory: null,
-        product: null,
-        brand: null,
-        search: "",
-      };
+  <script>
+    // Global variables to store filter data and current filters
+let stockCategories = [];
+let products = [];
+let brands = [];
+let currentFilters = {
+  stockCategory: null,
+  product: null,
+  brand: null,
+  search: "",
+  quantity: {
+    above: null,
+    below: null
+  }
+};
 
-      // Pagination variables
-      let currentPage = 1;
-      let pageSize = 10;
-      let totalItems = 0;
-      let totalPages = 0;
-      let allProductsData = []; // Store all products for client-side pagination
-      let dashboardStats = {
-        totalProducts: 0,
-        totalQuantity: 0,
-        totalValue: 0,
-      };
+// Pagination variables
+let currentPage = 1;
+let pageSize = 10;
+let totalItems = 0;
+let totalPages = 0;
+let allProductsData = []; // Store all products for client-side pagination
+let dashboardStats = {
+  totalProducts: 0,
+  totalQuantity: 0,
+  totalValue: 0,
+};
 
       // API Base URL - adjust this to your actual API endpoint
       //const API_BASE_URL = "http://127.0.0.1:8000/api";
@@ -608,30 +776,30 @@
         return userName;
       }
 
-      function getAuthHeaders() {
-        const token = getAuthToken();
-        if (!token) return null;
+function getAuthHeaders() {
+  const token = getAuthToken();
+  if (!token) return null;
 
-        return {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        };
-      }
+  return {
+    Authorization: `Bearer ${token}`,
+    "Content-Type": "application/json",
+  };
+}
 
-      function showAuthError() {
-        document.getElementById("auth-error").classList.remove("hidden");
-        document.getElementById("table-container").classList.add("hidden");
-        document.getElementById("loading-indicator").classList.add("hidden");
-      }
+function showAuthError() {
+  document.getElementById("auth-error").classList.remove("hidden");
+  document.getElementById("table-container").classList.add("hidden");
+  document.getElementById("loading-indicator").classList.add("hidden");
+}
 
-      function hideAuthError() {
-        document.getElementById("auth-error").classList.add("hidden");
-      }
+function hideAuthError() {
+  document.getElementById("auth-error").classList.add("hidden");
+}
 
-      function handleAuthError() {
-        localStorage.removeItem("token");
-        showAuthError();
-      }
+function handleAuthError() {
+  localStorage.removeItem("token");
+  showAuthError();
+}
 
       function logout() {
         localStorage.removeItem("omega-token");
@@ -639,445 +807,456 @@
         window.location.href = "/login/";
       }
 
-      // Enhanced fetch function with authentication
-      async function authenticatedFetch(url, options = {}) {
-        const headers = getAuthHeaders();
-        if (!headers) {
-          throw new Error("No authentication token");
-        }
+// Enhanced fetch function with authentication
+async function authenticatedFetch(url, options = {}) {
+  const headers = getAuthHeaders();
+  if (!headers) {
+    throw new Error("No authentication token");
+  }
 
-        const response = await fetch(url, {
-          ...options,
-          headers: {
-            ...headers,
-            ...options.headers,
-          },
-        });
+  const response = await fetch(url, {
+    ...options,
+    headers: {
+      ...headers,
+      ...options.headers,
+    },
+  });
 
-        if (response.status === 401 || response.status === 403) {
-          handleAuthError();
-          throw new Error("Authentication failed");
-        }
+  if (response.status === 401 || response.status === 403) {
+    handleAuthError();
+    throw new Error("Authentication failed");
+  }
 
-        return response;
-      }
+  return response;
+}
 
-      // Initialize the page
-      document.addEventListener("DOMContentLoaded", function () {
-        // Check if user is authenticated
-        if (!getAuthToken()) {
-          showAuthError();
-          return;
-        }
+// Initialize the page
+document.addEventListener("DOMContentLoaded", function () {
+  // Check if user is authenticated
+  if (!getAuthToken()) {
+    showAuthError();
+    return;
+  }
 
-        hideAuthError();
-        loadInitialData();
-        setupEventListeners();
-      });
+  hideAuthError();
+  
+  // Setup event listeners first, then load data
+  setupEventListeners();
+  loadInitialData();
+  
+  // Initialize username display
+  const usernameDisplay = document.getElementById("username-display");
+  if (usernameDisplay) {
+    const username = getUsername();
+    if (username) {
+      usernameDisplay.textContent = username;
+    } else {
+      usernameDisplay.textContent = "Guest";
+    }
+  }
+  
+  // Setup hamburger menu
+  setupHamburgerMenu();
+});
 
-      // Hamburger menu script
+// Hamburger menu setup
+function setupHamburgerMenu() {
+  const menuButton = document.getElementById("menuButton");
+  const dropdownMenu = document.getElementById("dropdownMenu");
 
-      document.addEventListener("DOMContentLoaded", function () {
-        const menuButton = document.getElementById("menuButton");
-        const dropdownMenu = document.getElementById("dropdownMenu");
+  if (menuButton && dropdownMenu) {
+    menuButton.addEventListener("click", function () {
+      dropdownMenu.classList.toggle("hidden");
+    });
 
-        menuButton.addEventListener("click", function () {
-          dropdownMenu.classList.toggle("hidden");
-        });
-
-        // Close dropdown when clicking outside
-        document.addEventListener("click", function (e) {
-          if (
-            !menuButton.contains(e.target) &&
-            !dropdownMenu.contains(e.target)
-          ) {
-            dropdownMenu.classList.add("hidden");
-          }
-        });
-      });
-
-      // Initialize username display when page loads
-      document.addEventListener("DOMContentLoaded", function () {
-        const usernameDisplay = document.getElementById("username-display");
-
-        if (usernameDisplay) {
-          const username = getUsername();
-          if (username) {
-            usernameDisplay.textContent = username;
-          } else {
-            usernameDisplay.textContent = "Guest";
-          }
-        }
-      });
-
-      function setupEventListeners() {
-        // Logout button
-
-        document
-          .getElementById("logout-btn")
-          .addEventListener("click", function (event) {
-            const confirmLogout = confirm("Are you sure you want to logout?");
-            if (confirmLogout) {
-              localStorage.removeItem("token");
-              window.location.href = "/login/";
-            }
-            // else: do nothing
-          });
-
-        ["stock-category-filter", "product-filter", "brand-filter"].forEach(
-          (id) => {
-            document.getElementById(id).addEventListener("click", (e) => {
-              e.stopPropagation();
-              if (e.target.closest(".dropdown-content")) return;
-
-              // ✅ Fix the key mapping
-              const keyMap = {
-                "stock-category-filter": "category",
-                "product-filter": "product",
-                "brand-filter": "brand",
-              };
-
-              const key = keyMap[id];
-              toggleDropdown(key);
-            });
-          }
-        );
-
-        // Filter panel toggle
-        document
-          .getElementById("filter-button")
-          .addEventListener("click", toggleFilterPanel);
-
-        // All products filter
-        document
-          .getElementById("all-products-filter")
-          .addEventListener("click", () => {
-            clearAllFilters();
-            loadProducts();
-            toggleFilterPanel();
-          });
-
-        // Apply filters button
-        document
-          .getElementById("apply-filters-btn")
-          .addEventListener("click", () => {
-            currentPage = 1; // Reset to first page when applying filters
-            loadProducts();
-            toggleFilterPanel();
-          });
-
-        // Search functionality
-        document
-          .getElementById("search-btn")
-          .addEventListener("click", handleSearch);
-        document
-          .getElementById("search-button")
-          .addEventListener("click", handleSearch);
-        document
-          .getElementById("search-input")
-          .addEventListener("keypress", (e) => {
-            if (e.key === "Enter") handleSearch();
-          });
-
-        // Page size selector
-        document
-          .getElementById("page-size-select")
-          .addEventListener("change", (e) => {
-            pageSize = parseInt(e.target.value);
-            currentPage = 1; // Reset to first page
-            displayPaginatedProducts();
-            updatePaginationControls();
-          });
-      }
-
-      async function loadInitialData() {
-        try {
-          // Load initial products
-          await loadProducts();
-
-          // Load filter options
-          await Promise.all([
-            loadStockCategories(),
-            loadProductsList(),
-            loadBrands(),
-          ]);
-        } catch (error) {
-          console.error("Error loading initial data:", error);
-          if (
-            error.message === "Authentication failed" ||
-            error.message === "No authentication token"
-          ) {
-            // Auth error already handled
-            return;
-          }
-          showError("Failed to load initial data. Please try again.");
-        }
-      }
-
-      async function loadProducts() {
-        showLoading();
-        try {
-          let url = `${API_BASE_URL}/products/`;
-          const params = new URLSearchParams();
-
-          console.log("Building URL with filters:", currentFilters); // ✅ Add this debug line
-
-          if (currentFilters.stockCategory) {
-            params.append("stockCategory", currentFilters.stockCategory);
-          }
-          if (currentFilters.product) {
-            params.append("product", currentFilters.product);
-            console.log("Added product parameter:", currentFilters.product); // ✅ Add this debug line
-          }
-          if (currentFilters.brand) {
-            params.append("brand", currentFilters.brand);
-          }
-          if (currentFilters.search) {
-            params.append("search", currentFilters.search);
-          }
-
-          if (params.toString()) {
-            url += "?" + params.toString();
-          }
-
-          console.log("Final API URL:", url); // ✅ Add this debug line
-
-          const response = await authenticatedFetch(url);
-          const data = await response.json();
-
-          if (data.success) {
-            allProductsData = data.data || [];
-            totalItems = allProductsData.length;
-            totalPages = Math.ceil(totalItems / pageSize);
-
-            // Calculate dashboard stats
-            calculateDashboardStats();
-            updateDashboard();
-
-            // Reset to first page if current page exceeds total pages
-            if (currentPage > totalPages && totalPages > 0) {
-              currentPage = 1;
-            }
-
-            displayPaginatedProducts();
-            updatePaginationControls();
-          } else {
-            throw new Error(data.error || "Failed to load products");
-          }
-        } catch (error) {
-          console.error("Error loading products:", error);
-          if (
-            error.message === "Authentication failed" ||
-            error.message === "No authentication token"
-          ) {
-            return;
-          }
-          showError("Failed to load products. Please try again.");
-        } finally {
-          hideLoading();
-        }
-      }
-
-      function calculateDashboardStats() {
-        dashboardStats = {
-          totalProducts: allProductsData.length,
-          totalQuantity: allProductsData.reduce((sum, product) => {
-            return sum + (parseFloat(product.quantity) || 0);
-          }, 0),
-          totalValue: allProductsData.reduce((sum, product) => {
-            return sum + (parseFloat(product.billedcost) || 0);
-          }, 0),
-        };
-      }
-
-      function updateDashboard() {
-        document.getElementById("total-items").textContent =
-          dashboardStats.totalProducts;
-        document.getElementById("total-quantity").textContent = Math.round(
-          dashboardStats.totalQuantity
-        );
-        // document.getElementById(
-        //   "total-value"
-        // ).textContent = `₹${dashboardStats.totalValue.toFixed(2)}`;
-      }
-
-      function displayPaginatedProducts() {
-        const startIndex = (currentPage - 1) * pageSize;
-        const endIndex = startIndex + pageSize;
-        const paginatedData = allProductsData.slice(startIndex, endIndex);
-
-        displayProducts(paginatedData);
-      }
-
-      function updatePaginationControls() {
-        const paginationContainer = document.getElementById(
-          "pagination-container"
-        );
-        const paginationInfo = document.getElementById("pagination-info");
-
-        // Update pagination info
-        const startItem =
-          totalItems === 0 ? 0 : (currentPage - 1) * pageSize + 1;
-        const endItem = Math.min(currentPage * pageSize, totalItems);
-        paginationInfo.textContent = `Showing ${startItem}-${endItem} of ${totalItems} results`;
-
-        // Clear existing pagination buttons
-        paginationContainer.innerHTML = "";
-
-        if (totalPages <= 1) {
-          return; // Don't show pagination if only one page or no data
-        }
-
-        // Previous button
-        const prevBtn = createPaginationButton(
-          "Previous",
-          currentPage - 1,
-          currentPage === 1
-        );
-        prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
-        paginationContainer.appendChild(prevBtn);
-
-        // Page numbers
-        const maxVisiblePages = 3;
-        let startPage = Math.max(
-          1,
-          currentPage - Math.floor(maxVisiblePages / 2)
-        );
-        let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-
-        // Adjust start page if we're near the end
-        if (endPage - startPage + 1 < maxVisiblePages) {
-          startPage = Math.max(1, endPage - maxVisiblePages + 1);
-        }
-
-        // First page and ellipsis
-        if (startPage > 1) {
-          paginationContainer.appendChild(createPaginationButton("1", 1));
-          if (startPage > 2) {
-            const ellipsis = document.createElement("span");
-            ellipsis.className = "pagination-btn";
-            ellipsis.textContent = "...";
-            ellipsis.style.cursor = "default";
-            paginationContainer.appendChild(ellipsis);
-          }
-        }
-
-        // Page numbers
-        for (let i = startPage; i <= endPage; i++) {
-          const pageBtn = createPaginationButton(
-            i.toString(),
-            i,
-            false,
-            i === currentPage
-          );
-          paginationContainer.appendChild(pageBtn);
-        }
-
-        // Last page and ellipsis
-        if (endPage < totalPages) {
-          if (endPage < totalPages - 1) {
-            const ellipsis = document.createElement("span");
-            ellipsis.className = "pagination-btn";
-            ellipsis.textContent = "...";
-            ellipsis.style.cursor = "default";
-            paginationContainer.appendChild(ellipsis);
-          }
-          paginationContainer.appendChild(
-            createPaginationButton(totalPages.toString(), totalPages)
-          );
-        }
-
-        // Next button
-        const nextBtn = createPaginationButton(
-          "Next",
-          currentPage + 1,
-          currentPage === totalPages
-        );
-        nextBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
-        paginationContainer.appendChild(nextBtn);
-      }
-
-      function createPaginationButton(
-        text,
-        page,
-        disabled = false,
-        active = false
+    // Close dropdown when clicking outside
+    document.addEventListener("click", function (e) {
+      if (
+        !menuButton.contains(e.target) &&
+        !dropdownMenu.contains(e.target)
       ) {
-        const button = document.createElement("button");
-        button.className = `pagination-btn ${active ? "active" : ""}`;
-        button.textContent = text;
-        button.disabled = disabled;
-
-        if (!disabled && !active) {
-          button.addEventListener("click", () => {
-            currentPage = page;
-            displayPaginatedProducts();
-            updatePaginationControls();
-          });
-        }
-
-        return button;
+        dropdownMenu.classList.add("hidden");
       }
+    });
+  }
+}
 
-      async function loadStockCategories() {
-        try {
-          const response = await authenticatedFetch(
-            `${API_BASE_URL}/stock-categories/`
-          );
-          const data = await response.json();
+function toggleFilterPanel() {
+  const filterPanel = document.getElementById("filter-panel");
+  console.log("Filter panel element:", filterPanel);
+  
+  if (!filterPanel) {
+    console.error("Filter panel element not found!");
+    return;
+  }
+  
+  filterPanel.classList.toggle("hidden");
+  console.log("Filter panel hidden class:", filterPanel.classList.contains("hidden"));
+  
+  // Update filter indicator when panel is opened
+  if (!filterPanel.classList.contains("hidden")) {
+    updateFilterIndicator();
+  }
+}
 
-          if (data.success) {
-            stockCategories = data.data;
-            populateDropdown("category", stockCategories);
+function setupEventListeners() {
+  // Quantity filter listeners
+  document.getElementById("apply-above-filter").addEventListener("click", () => {
+    const value = parseFloat(document.getElementById("above-quantity-input").value);
+    if (!isNaN(value)) {
+      currentFilters.quantity.above = value;
+      currentPage = 1;
+      updateFilterIndicator();
+      loadProducts();
+    }
+  });
+
+  document.getElementById("clear-above-filter").addEventListener("click", () => {
+    document.getElementById("above-quantity-input").value = "";
+    currentFilters.quantity.above = null;
+    currentPage = 1;
+    updateFilterIndicator();
+    loadProducts();
+  });
+
+  document.getElementById("apply-below-filter").addEventListener("click", () => {
+    const value = parseFloat(document.getElementById("below-quantity-input").value);
+    if (!isNaN(value)) {
+      currentFilters.quantity.below = value;
+      currentPage = 1;
+      updateFilterIndicator();
+      loadProducts();
+    }
+  });
+
+  document.getElementById("clear-below-filter").addEventListener("click", () => {
+    document.getElementById("below-quantity-input").value = "";
+    currentFilters.quantity.below = null;
+    currentPage = 1;
+    updateFilterIndicator();
+    loadProducts();
+  });
+
+  // Logout button
+  document.getElementById("logout-btn").addEventListener("click", function (event) {
+    const confirmLogout = confirm("Are you sure you want to logout?");
+    if (confirmLogout) {
+      localStorage.removeItem("token");
+      window.location.href = "/login/";
+    }
+  });
+
+  // Filter dropdown listeners
+  ["stock-category-filter", "product-filter", "brand-filter"].forEach((id) => {
+    document.getElementById(id).addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (e.target.closest(".dropdown-content")) return;
+
+      const keyMap = {
+        "stock-category-filter": "category",
+        "product-filter": "product",
+        "brand-filter": "brand",
+      };
+
+      const key = keyMap[id];
+      toggleDropdown(key);
+    });
+  });
+
+  // Filter panel toggle - FIXED VERSION
+  const filterButton = document.getElementById("filter-button");
+  if (filterButton) {
+    filterButton.addEventListener("click", function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      console.log("Filter button clicked!");
+      toggleFilterPanel();
+    });
+  } else {
+    console.error("Filter button not found!");
+  }
+
+  // All products filter
+  document.getElementById("all-products-filter").addEventListener("click", () => {
+    clearAllFilters();
+    loadProducts();
+    toggleFilterPanel();
+  });
+
+  // Apply filters button
+  document.getElementById("apply-filters-btn").addEventListener("click", () => {
+    currentPage = 1;
+    loadProducts();
+    toggleFilterPanel();
+  });
+
+  // Search functionality
+  document.getElementById("search-btn").addEventListener("click", handleSearch);
+  document.getElementById("search-button").addEventListener("click", handleSearch);
+  document.getElementById("search-input").addEventListener("keypress", (e) => {
+    if (e.key === "Enter") handleSearch();
+  });
+
+  // Page size selector
+  document.getElementById("page-size-select").addEventListener("change", (e) => {
+    pageSize = parseInt(e.target.value);
+    currentPage = 1;
+    displayPaginatedProducts();
+    updatePaginationControls();
+  });
+}
+
+async function loadInitialData() {
+  try {
+    await loadProducts();
+    await Promise.all([
+      loadStockCategories(),
+      loadProductsList(),
+      loadBrands(),
+    ]);
+  } catch (error) {
+    console.error("Error loading initial data:", error);
+    if (
+      error.message === "Authentication failed" ||
+      error.message === "No authentication token"
+    ) {
+      return;
+    }
+    showError("Failed to load initial data. Please try again.");
+  }
+}
+
+async function loadProducts() {
+  showLoading();
+  try {
+    let url = `${API_BASE_URL}/products/`;
+    const params = new URLSearchParams();
+
+    if (currentFilters.stockCategory) {
+      params.append("stockCategory", currentFilters.stockCategory);
+    }
+    if (currentFilters.product) {
+      params.append("product", currentFilters.product);
+    }
+    if (currentFilters.brand) {
+      params.append("brand", currentFilters.brand);
+    }
+    if (currentFilters.search) {
+      params.append("search", currentFilters.search);
+    }
+
+    if (params.toString()) {
+      url += "?" + params.toString();
+    }
+
+    const response = await authenticatedFetch(url);
+    const data = await response.json();
+
+    if (data.success) {
+      allProductsData = data.data || [];
+      
+      // Apply quantity filters if set
+      if (currentFilters.quantity.above !== null || currentFilters.quantity.below !== null) {
+        allProductsData = allProductsData.filter(product => {
+          const productQty = parseFloat(product.quantity) || 0;
+          let meetsAbove = true;
+          let meetsBelow = true;
+          
+          if (currentFilters.quantity.above !== null) {
+            meetsAbove = productQty > currentFilters.quantity.above;
           }
-        } catch (error) {
-          console.error("Error loading stock categories:", error);
-        }
-      }
-
-      async function loadProductsList() {
-        try {
-          const response = await authenticatedFetch(
-            `${API_BASE_URL}/products-list/`
-          );
-          const data = await response.json();
-
-          if (data.success) {
-            products = data.data;
-            populateDropdown("product", products);
+          if (currentFilters.quantity.below !== null) {
+            meetsBelow = productQty < currentFilters.quantity.below;
           }
-        } catch (error) {
-          console.error("Error loading products list:", error);
-        }
+          
+          return meetsAbove && meetsBelow;
+        });
+      }
+      
+      totalItems = allProductsData.length;
+      totalPages = Math.ceil(totalItems / pageSize);
+
+      calculateDashboardStats();
+      updateDashboard();
+
+      if (currentPage > totalPages && totalPages > 0) {
+        currentPage = 1;
       }
 
-      async function loadBrands() {
-        try {
-          const response = await authenticatedFetch(`${API_BASE_URL}/brands/`);
-          const data = await response.json();
+      displayPaginatedProducts();
+      updatePaginationControls();
+    } else {
+      throw new Error(data.error || "Failed to load products");
+    }
+  } catch (error) {
+    console.error("Error loading products:", error);
+    if (
+      error.message === "Authentication failed" ||
+      error.message === "No authentication token"
+    ) {
+      return;
+    }
+    showError("Failed to load products. Please try again.");
+  } finally {
+    hideLoading();
+  }
+}
 
-          if (data.success) {
-            brands = data.data;
-            populateDropdown("brand", brands);
-          }
-        } catch (error) {
-          console.error("Error loading brands:", error);
-        }
-      }
+function calculateDashboardStats() {
+  dashboardStats = {
+    totalProducts: allProductsData.length,
+    totalQuantity: allProductsData.reduce((sum, product) => {
+      return sum + (parseFloat(product.quantity) || 0);
+    }, 0),
+    totalValue: allProductsData.reduce((sum, product) => {
+      return sum + (parseFloat(product.billedcost) || 0);
+    }, 0),
+  };
+}
 
-      function populateDropdown(type, items) {
-        const dropdownId = `${type}-dropdown`;
-        const dropdown = document.getElementById(dropdownId);
+function updateDashboard() {
+  document.getElementById("total-items").textContent = dashboardStats.totalProducts;
+  document.getElementById("total-quantity").textContent = Math.round(dashboardStats.totalQuantity);
+}
 
-        if (!dropdown) return;
+function displayPaginatedProducts() {
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = startIndex + pageSize;
+  const paginatedData = allProductsData.slice(startIndex, endIndex);
+  displayProducts(paginatedData);
+}
 
-        // Clear existing dropdown
-        dropdown.innerHTML = "";
+function updatePaginationControls() {
+  const paginationContainer = document.getElementById("pagination-container");
+  const paginationInfo = document.getElementById("pagination-info");
 
-        // Add search container
-        const searchContainer = document.createElement("div");
-        searchContainer.className = "dropdown-search-container";
-        searchContainer.innerHTML = `
+  const startItem = totalItems === 0 ? 0 : (currentPage - 1) * pageSize + 1;
+  const endItem = Math.min(currentPage * pageSize, totalItems);
+  paginationInfo.textContent = `Showing ${startItem}-${endItem} of ${totalItems} results`;
+
+  paginationContainer.innerHTML = "";
+
+  if (totalPages <= 1) {
+    return;
+  }
+
+  // Previous button
+  const prevBtn = createPaginationButton("Previous", currentPage - 1, currentPage === 1);
+  prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
+  paginationContainer.appendChild(prevBtn);
+
+  // Page numbers
+  const maxVisiblePages = 3;
+  let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+  let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+  if (endPage - startPage + 1 < maxVisiblePages) {
+    startPage = Math.max(1, endPage - maxVisiblePages + 1);
+  }
+
+  if (startPage > 1) {
+    paginationContainer.appendChild(createPaginationButton("1", 1));
+    if (startPage > 2) {
+      const ellipsis = document.createElement("span");
+      ellipsis.className = "pagination-btn";
+      ellipsis.textContent = "...";
+      ellipsis.style.cursor = "default";
+      paginationContainer.appendChild(ellipsis);
+    }
+  }
+
+  for (let i = startPage; i <= endPage; i++) {
+    const pageBtn = createPaginationButton(i.toString(), i, false, i === currentPage);
+    paginationContainer.appendChild(pageBtn);
+  }
+
+  if (endPage < totalPages) {
+    if (endPage < totalPages - 1) {
+      const ellipsis = document.createElement("span");
+      ellipsis.className = "pagination-btn";
+      ellipsis.textContent = "...";
+      ellipsis.style.cursor = "default";
+      paginationContainer.appendChild(ellipsis);
+    }
+    paginationContainer.appendChild(createPaginationButton(totalPages.toString(), totalPages));
+  }
+
+  // Next button
+  const nextBtn = createPaginationButton("Next", currentPage + 1, currentPage === totalPages);
+  nextBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
+  paginationContainer.appendChild(nextBtn);
+}
+
+function createPaginationButton(text, page, disabled = false, active = false) {
+  const button = document.createElement("button");
+  button.className = `pagination-btn ${active ? "active" : ""}`;
+  button.textContent = text;
+  button.disabled = disabled;
+
+  if (!disabled && !active) {
+    button.addEventListener("click", () => {
+      currentPage = page;
+      displayPaginatedProducts();
+      updatePaginationControls();
+    });
+  }
+
+  return button;
+}
+
+async function loadStockCategories() {
+  try {
+    const response = await authenticatedFetch(`${API_BASE_URL}/stock-categories/`);
+    const data = await response.json();
+
+    if (data.success) {
+      stockCategories = data.data;
+      populateDropdown("category", stockCategories);
+    }
+  } catch (error) {
+    console.error("Error loading stock categories:", error);
+  }
+}
+
+async function loadProductsList() {
+  try {
+    const response = await authenticatedFetch(`${API_BASE_URL}/products-list/`);
+    const data = await response.json();
+
+    if (data.success) {
+      products = data.data;
+      populateDropdown("product", products);
+    }
+  } catch (error) {
+    console.error("Error loading products list:", error);
+  }
+}
+
+async function loadBrands() {
+  try {
+    const response = await authenticatedFetch(`${API_BASE_URL}/brands/`);
+    const data = await response.json();
+
+    if (data.success) {
+      brands = data.data;
+      populateDropdown("brand", brands);
+    }
+  } catch (error) {
+    console.error("Error loading brands:", error);
+  }
+}
+
+function populateDropdown(type, items) {
+  const dropdownId = `${type}-dropdown`;
+  const dropdown = document.getElementById(dropdownId);
+
+  if (!dropdown) return;
+
+  dropdown.innerHTML = "";
+
+  const searchContainer = document.createElement("div");
+  searchContainer.className = "dropdown-search-container";
+  searchContainer.innerHTML = `
     <div style="position: relative;">
       <input type="text" placeholder="Search ${type}..." 
              class="dropdown-search-input" 
@@ -1085,202 +1264,203 @@
       <i class="fas fa-search dropdown-search-icon"></i>
     </div>
   `;
-        dropdown.appendChild(searchContainer);
+  dropdown.appendChild(searchContainer);
 
-        // Add items container
-        const itemsContainer = document.createElement("div");
-        itemsContainer.id = `${type}-items-container`;
-        dropdown.appendChild(itemsContainer);
+  const itemsContainer = document.createElement("div");
+  itemsContainer.id = `${type}-items-container`;
+  dropdown.appendChild(itemsContainer);
 
-        // Function to render filtered items
-        const renderItems = (filteredItems) => {
-          itemsContainer.innerHTML = "";
-          filteredItems.forEach((item) => {
-            const div = document.createElement("div");
-            div.className =
-              "px-3 py-2 cursor-pointer hover:bg-gray-200 text-sm";
-            div.textContent = item;
-            if (currentFilters[type] === item)
-              div.classList.add("filter-selected");
-            div.addEventListener("click", () => selectFilter(type, item));
-            itemsContainer.appendChild(div);
-          });
-        };
-
-        // Initial render of all items
-        renderItems(items);
-
-        // Add search functionality
-        const searchInput = document.getElementById(`${type}-search-input`);
-        searchInput.addEventListener("input", (e) => {
-          const searchTerm = e.target.value.toLowerCase();
-          const filteredItems = items.filter((item) =>
-            item.toLowerCase().includes(searchTerm)
-          );
-          renderItems(filteredItems);
-        });
+  const renderItems = (filteredItems) => {
+    itemsContainer.innerHTML = "";
+    filteredItems.forEach((item) => {
+      const div = document.createElement("div");
+      div.className = "px-3 py-2 cursor-pointer hover:bg-gray-200 text-sm";
+      div.textContent = item;
+      if (currentFilters[type === 'category' ? 'stockCategory' : type] === item) {
+        div.classList.add("filter-selected");
       }
+      div.addEventListener("click", () => selectFilter(type, item));
+      itemsContainer.appendChild(div);
+    });
+  };
 
-      function selectFilter(type, value) {
-        console.log("selectFilter called with:", type, value); // ✅ Add this debug line
-        if (type === "category") {
-          currentFilters.stockCategory = value;
-        } else if (type === "product") {
-          currentFilters.product = value;
-        } else if (type === "brand") {
-          currentFilters.brand = value;
-        }
+  renderItems(items);
 
-        console.log("Current filters after selection:", currentFilters); // ✅ Add this debug line
+  const searchInput = document.getElementById(`${type}-search-input`);
+  searchInput.addEventListener("input", (e) => {
+    const searchTerm = e.target.value.toLowerCase();
+    const filteredItems = items.filter((item) =>
+      item.toLowerCase().includes(searchTerm)
+    );
+    renderItems(filteredItems);
+  });
+}
 
-        updateFilterIndicator();
-        populateDropdown(
-          type,
-          type === "category"
-            ? stockCategories
-            : type === "product"
-            ? products
-            : brands
-        );
-      }
+function selectFilter(type, value) {
+  console.log("selectFilter called with:", type, value);
+  
+  if (type === "category") {
+    currentFilters.stockCategory = value;
+  } else if (type === "product") {
+    currentFilters.product = value;
+  } else if (type === "brand") {
+    currentFilters.brand = value;
+  }
 
-      function clearAllFilters() {
-        currentFilters = {
-          stockCategory: null,
-          product: null,
-          brand: null,
-          search: "",
-        };
-        document.getElementById("search-input").value = "";
-        currentPage = 1; // Reset to first page
-        updateFilterIndicator();
-      }
+  console.log("Current filters after selection:", currentFilters);
 
-      function updateFilterIndicator() {
-        const filterDot = document.getElementById("filter-dot");
-        const selectedFiltersSpan = document.getElementById("selected-filters");
-        const { stockCategory, product, brand } = currentFilters;
+  updateFilterIndicator();
+  populateDropdown(
+    type,
+    type === "category" ? stockCategories : type === "product" ? products : brands
+  );
+}
 
-        const hasFilters = stockCategory || product || brand;
+function clearAllFilters() {
+  currentFilters = {
+    stockCategory: null,
+    product: null,
+    brand: null,
+    search: "",
+    quantity: {
+      above: null,
+      below: null
+    }
+  };
+  document.getElementById("search-input").value = "";
+  document.getElementById("above-quantity-input").value = "";
+  document.getElementById("below-quantity-input").value = "";
+  currentPage = 1;
+  updateFilterIndicator();
+}
 
-        if (hasFilters) {
-          filterDot.classList.remove("hidden");
+function updateFilterIndicator() {
+  const filterDot = document.getElementById("filter-dot");
+  const selectedFiltersSpan = document.getElementById("selected-filters");
+  const { stockCategory, product, brand, quantity } = currentFilters;
 
-          const selected = [];
-          if (stockCategory)
-            selected.push(
-              `<div><strong>Stock Category:</strong> ${stockCategory}</div>`
-            );
-          if (product)
-            selected.push(`<div><strong>Product:</strong> ${product}</div>`);
-          if (brand)
-            selected.push(`<div><strong>Brand:</strong> ${brand}</div>`);
+  // Check if any filters are active
+  const hasFilters = stockCategory || product || brand || 
+                     quantity.above !== null || quantity.below !== null || 
+                     currentFilters.search.trim() !== "";
 
-          selectedFiltersSpan.innerHTML = selected.join("");
-        } else {
-          filterDot.classList.add("hidden");
-          selectedFiltersSpan.textContent = "";
-        }
-      }
+  if (hasFilters) {
+    filterDot.classList.remove("hidden");
 
-      function toggleFilterPanel() {
-        const filterPanel = document.getElementById("filter-panel");
-        filterPanel.classList.toggle("hidden");
-      }
+    const selected = [];
+    if (stockCategory) {
+      selected.push(`<div><strong>Stock Category:</strong> ${stockCategory}</div>`);
+    }
+    if (product) {
+      selected.push(`<div><strong>Product:</strong> ${product}</div>`);
+    }
+    if (brand) {
+      selected.push(`<div><strong>Brand:</strong> ${brand}</div>`);
+    }
+    if (quantity.above !== null) {
+      selected.push(`<div><strong>Quantity:</strong> Above ${quantity.above}</div>`);
+    }
+    if (quantity.below !== null) {
+      selected.push(`<div><strong>Quantity:</strong> Below ${quantity.below}</div>`);
+    }
+    if (currentFilters.search.trim() !== "") {
+      selected.push(`<div><strong>Search:</strong> ${currentFilters.search}</div>`);
+    }
 
-      function toggleDropdown(type) {
-        const dropdown = document.getElementById(`${type}-dropdown`);
-        const arrow = document.getElementById(`${type}-arrow`);
+    selectedFiltersSpan.innerHTML = selected.join("");
+  } else {
+    filterDot.classList.add("hidden");
+    selectedFiltersSpan.innerHTML = "";
+  }
+}
 
-        dropdown.classList.toggle("hidden");
+function toggleDropdown(type) {
+  const dropdown = document.getElementById(`${type}-dropdown`);
+  const arrow = document.getElementById(`${type}-arrow`);
 
-        if (dropdown.classList.contains("hidden")) {
-          arrow.classList.remove("fa-chevron-up");
-          arrow.classList.add("fa-chevron-down");
-        } else {
-          arrow.classList.remove("fa-chevron-down");
-          arrow.classList.add("fa-chevron-up");
-        }
-      }
+  dropdown.classList.toggle("hidden");
 
-      function handleSearch() {
-        const searchValue = document
-          .getElementById("search-input")
-          .value.trim();
-        currentFilters.search = searchValue;
-        updateFilterIndicator();
-        loadProducts();
-      }
+  if (dropdown.classList.contains("hidden")) {
+    arrow.classList.remove("fa-chevron-up");
+    arrow.classList.add("fa-chevron-down");
+  } else {
+    arrow.classList.remove("fa-chevron-down");
+    arrow.classList.add("fa-chevron-up");
+  }
+}
 
-      function displayProducts(productsData) {
-        const tableBody = document.getElementById("products-table-body");
-        const noResults = document.getElementById("no-results");
-        const tableContainer = document.getElementById("table-container");
+function handleSearch() {
+  const searchValue = document.getElementById("search-input").value.trim();
+  currentFilters.search = searchValue;
+  currentPage = 1;
+  updateFilterIndicator();
+  loadProducts();
+}
 
-        if (!productsData || productsData.length === 0) {
-          tableContainer.classList.add("hidden");
-          noResults.classList.remove("hidden");
-          return;
-        }
+function displayProducts(productsData) {
+  const tableBody = document.getElementById("products-table-body");
+  const noResults = document.getElementById("no-results");
+  const tableContainer = document.getElementById("table-container");
 
-        tableContainer.classList.remove("hidden");
-        noResults.classList.add("hidden");
+  if (!productsData || productsData.length === 0) {
+    tableContainer.classList.add("hidden");
+    noResults.classList.remove("hidden");
+    return;
+  }
 
-        tableBody.innerHTML = "";
+  tableContainer.classList.remove("hidden");
+  noResults.classList.add("hidden");
 
-        productsData.forEach((product, index) => {
-          const row = document.createElement("div");
-          row.className = `table-row grid grid-cols-3 ${
-            index % 2 === 0 ? "" : "bg-gray-50"
-          }`;
+  tableBody.innerHTML = "";
 
-          // Format quantity with unit
-          const quantityDisplay = `${product.quantity || 0} ${
-            product.unit || ""
-          }`.trim();
+  productsData.forEach((product, index) => {
+    const row = document.createElement("div");
+    row.className = `table-row grid grid-cols-3 ${index % 2 === 0 ? "" : "bg-gray-50"}`;
 
-          row.innerHTML = `
-            <div class="table-cell">${product.name || "N/A"}</div>
-            <div class="table-cell">${quantityDisplay}</div>
-            <div class="table-cell">₹${Number(product.billedcost || 0).toFixed(
-              2
-            )}</div>
-          `;
+    const quantityDisplay = `${product.quantity || 0} ${product.unit || ""}`.trim();
 
-          tableBody.appendChild(row);
-        });
-      }
+    row.innerHTML = `
+      <div class="table-cell">${product.name || "N/A"}</div>
+      <div class="table-cell">${quantityDisplay}</div>
+      <div class="table-cell">₹${Number(product.billedcost || 0).toFixed(2)}</div>
+    `;
 
-      function showLoading() {
-        document.getElementById("loading-indicator").classList.remove("hidden");
-        document.getElementById("table-container").classList.add("hidden");
-        document.getElementById("no-results").classList.add("hidden");
-      }
+    tableBody.appendChild(row);
+  });
+}
 
-      function hideLoading() {
-        document.getElementById("loading-indicator").classList.add("hidden");
-      }
+function showLoading() {
+  document.getElementById("loading-indicator").classList.remove("hidden");
+  document.getElementById("table-container").classList.add("hidden");
+  document.getElementById("no-results").classList.add("hidden");
+}
 
-      function showError(message) {
-        alert(message); // You can replace this with a more elegant error display
-      }
+function hideLoading() {
+  document.getElementById("loading-indicator").classList.add("hidden");
+}
 
-      // Close filter panel when clicking outside of it and outside the filter button
-      document.addEventListener("click", function (event) {
-        const filterPanel = document.getElementById("filter-panel");
-        const filterButton = document.getElementById("filter-button");
+function showError(message) {
+  alert(message);
+}
 
-        // Don't close if clicking inside the filter panel or the filter button
-        if (
-          filterPanel.contains(event.target) ||
-          filterButton.contains(event.target)
-        ) {
-          return;
-        }
+// Close filter panel when clicking outside
+document.addEventListener("click", function (event) {
+  const filterPanel = document.getElementById("filter-panel");
+  const filterButton = document.getElementById("filter-button");
 
-        // Close the panel (click is outside both panel and button)
-        filterPanel.classList.add("hidden");
-      });
-    </script>
-  </body>
+  if (!filterPanel || !filterButton) {
+    return;
+  }
+
+  if (filterPanel.contains(event.target) || filterButton.contains(event.target)) {
+    return;
+  }
+
+  if (!filterPanel.classList.contains("hidden")) {
+    filterPanel.classList.add("hidden");
+  }
+});
+  </script>
+</body>
+
 </html>
