@@ -838,12 +838,12 @@
         product: false,
       };
       // API Base URL
-      const API_BASE_URL = "http://127.0.0.1:8000/api";
-      //const API_BASE_URL = "https://omega.imcbs.com";
+      //const API_BASE_URL = "http://127.0.0.1:8000/api";
+      const API_BASE_URL = "https://omega.imcbs.com";
 
       // Authentication utilities
       function getAuthToken() {
-        const token = localStorage.getItem("token");
+        const token = localStorage.getItem("omega-token");
         if (!token) {
           showAuthError();
           return null;
@@ -852,7 +852,7 @@
       }
 
       function getUsername() {
-        const userName = localStorage.getItem("username");
+        const userName = localStorage.getItem("omega-userId");
         if (!userName) {
           showAuthError();
           return null;
@@ -887,7 +887,8 @@
       }
 
       function logout() {
-        localStorage.removeItem("token");
+        localStorage.removeItem("omega-token");
+        localStorage.removeItem("omega-userId");
         window.location.href = "/login/";
       }
 
