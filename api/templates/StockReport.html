@@ -670,12 +670,12 @@
   <!-- Stock Table -->
   <div class="px-0 md:px-3 pb-6 md:mx-20 mx-2" id="table-container">
     <div class="table-container">
-      <div class="table-header text-xs md:text-sm grid grid-cols-3">
+      <div class="table-header text-xs md:text-sm grid grid-cols-2">
         <div class="table-cell text-xs md:text-sm text-center">
           Product Name
         </div>
         <div class="table-cell text-xs md:text-sm text-center">Quantity</div>
-        <div class="table-cell text-xs md:text-sm text-center">Cost</div>
+        <!-- <div class="table-cell text-xs md:text-sm text-center">Cost</div> -->
       </div>
 
       <div id="products-table-body">
@@ -1415,15 +1415,15 @@ function displayProducts(productsData) {
 
   productsData.forEach((product, index) => {
     const row = document.createElement("div");
-    row.className = `table-row grid grid-cols-3 ${index % 2 === 0 ? "" : "bg-gray-50"}`;
+    row.className = `table-row grid grid-cols-2 ${index % 2 === 0 ? "" : "bg-gray-50"}`;
 
     const quantityDisplay = `${product.quantity || 0} ${product.unit || ""}`.trim();
 
     row.innerHTML = `
       <div class="table-cell">${product.name || "N/A"}</div>
       <div class="table-cell">${quantityDisplay}</div>
-      <div class="table-cell">₹${Number(product.billedcost || 0).toFixed(2)}</div>
     `;
+    // <div class="table-cell">₹${Number(product.billedcost || 0).toFixed(2)}</div>
 
     tableBody.appendChild(row);
   });
