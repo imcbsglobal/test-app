@@ -29,8 +29,7 @@ SECRET_KEY = config('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=False, cast=bool)
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'omega.imcbs.com']
-
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'test.imcbs.com']
 
 
 # Application definition
@@ -131,7 +130,6 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'api' / 'static']
 
 
-
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
@@ -145,8 +143,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # }
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(days=365),  # long lifetime for access token
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=365),  # long lifetime for refresh token
+    # long lifetime for access token
+    "ACCESS_TOKEN_LIFETIME": timedelta(days=365),
+    # long lifetime for refresh token
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=365),
     "ROTATE_REFRESH_TOKENS": False,
     "BLACKLIST_AFTER_ROTATION": True,
     "AUTH_HEADER_TYPES": ("Bearer",),
